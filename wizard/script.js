@@ -73,10 +73,10 @@ function getMailType() {
 const docLabels = {
   handelsregister: 'Aktueller Handelsregisterauszug (alle Seiten)',
   gewerbe: 'Gewerbeanmeldung oder Gewerbeschein (alle Seiten inkl. Unterschrift)',
-  ausweis_gf: 'Ausweiskopie des Geschaeftsfuehrers (Reisepass oder Personalausweis, Vorder- und Rueckseite)',
+  ausweis_gf: 'Ausweiskopie des Geschäftsführers (Reisepass oder Personalausweis, Vorder- und Rückseite)',
   ausweis_ubo: 'Ausweiskopie(n) der wirtschaftlich Berechtigten (>25% Anteil)',
-  adressnachweis: 'Adressnachweis der wirtschaftlich Berechtigten (z.B. Nebenkostenabrechnung, nicht aelter als 3 Monate)',
-  kontoauszug: 'Kontoauszug (mit Banklogo, IBAN und Firmenname, nicht aelter als 12 Monate, kein App-Screenshot)',
+  adressnachweis: 'Adressnachweis der wirtschaftlich Berechtigten (z.B. Nebenkostenabrechnung, nicht älter als 3 Monate)',
+  kontoauszug: 'Kontoauszug (mit Banklogo, IBAN und Firmenname, nicht älter als 12 Monate, kein App-Screenshot)',
   pcidss: 'PCI DSS SAQ-A Formular (elektronisch signiert)'
 };
 
@@ -116,11 +116,11 @@ function buildInitialMail() {
 
   if (lang === 'en') {
     let html = `<p>Dear ${name},</p>`;
-    html += `<p>To set up your payment processing through our partner Adyen, we need some documents from you. <strong>We will handle the entire setup for you</strong> - you only need to send us the following documents.</p>`;
+    html += `<p>To set up your payment processing through our partner Adyen, we need some documents from you. <strong>We will handle the entire setup for you</strong> – you only need to send us the following documents.</p>`;
     html += `<h3>What we need from you:</h3>`;
     html += `<p><strong>1. Company documents:</strong></p><ul>`;
-    html += `<li>Current extract from the commercial register (Handelsregisterauszug) - all pages</li>`;
-    html += `<li>Business registration certificate (Gewerbeanmeldung) - all pages including signature</li></ul>`;
+    html += `<li>Current extract from the commercial register (Handelsregisterauszug) – all pages</li>`;
+    html += `<li>Business registration certificate (Gewerbeanmeldung) – all pages including signature</li></ul>`;
     html += `<p><strong>2. ID copy of the managing director:</strong></p><ul>`;
     html += `<li>Passport OR national ID card (front and back)</li></ul>`;
     html += `<p><strong>3. Ultimate Beneficial Owners (persons with more than 25% company shares):</strong></p><ul>`;
@@ -143,29 +143,29 @@ function buildInitialMail() {
   }
 
   let html = `<p>Sehr geehrte/r ${name},</p>`;
-  html += `<p>fuer die Einrichtung Ihrer Zahlungsanbindung ueber unseren Partner Adyen benoetigen wir einige Unterlagen von Ihnen. <strong>Wir uebernehmen die komplette Einrichtung fuer Sie</strong> - Sie muessen lediglich die folgenden Dokumente an uns senden.</p>`;
-  html += `<h3>Was wir von Ihnen benoetigen:</h3>`;
+  html += `<p>für die Einrichtung Ihrer Zahlungsanbindung über unseren Partner Adyen benötigen wir einige Unterlagen von Ihnen. <strong>Wir übernehmen die komplette Einrichtung für Sie</strong> – Sie müssen lediglich die folgenden Dokumente an uns senden.</p>`;
+  html += `<h3>Was wir von Ihnen benötigen:</h3>`;
   html += `<p><strong>1. Firmendokumente:</strong></p><ul>`;
   html += `<li>Aktueller Handelsregisterauszug (alle Seiten)</li>`;
   html += `<li>Gewerbeanmeldung oder Gewerbeschein (alle Seiten inkl. Unterschrift)</li></ul>`;
-  html += `<p><strong>2. Ausweiskopie des Geschaeftsfuehrers:</strong></p><ul>`;
-  html += `<li>Reisepass ODER Personalausweis (Vorder- und Rueckseite)</li></ul>`;
+  html += `<p><strong>2. Ausweiskopie des Geschäftsführers:</strong></p><ul>`;
+  html += `<li>Reisepass ODER Personalausweis (Vorder- und Rückseite)</li></ul>`;
   html += `<p><strong>3. Wirtschaftlich Berechtigte (Personen mit mehr als 25% Firmenanteil):</strong></p><ul>`;
   html += `<li>Name, Geburtsdatum und Anteil in Prozent</li>`;
   html += `<li>Ausweiskopie (Reisepass oder Personalausweis, beidseitig)</li>`;
-  html += `<li>Adressnachweis (z.B. Nebenkostenabrechnung oder Steuerbescheid, nicht aelter als 3 Monate)</li></ul>`;
-  html += `<p><strong>4. Bankverbindung fuer Auszahlungen:</strong></p><ul>`;
+  html += `<li>Adressnachweis (z.B. Nebenkostenabrechnung oder Steuerbescheid, nicht älter als 3 Monate)</li></ul>`;
+  html += `<p><strong>4. Bankverbindung für Auszahlungen:</strong></p><ul>`;
   html += `<li>IBAN und Name des Kontoinhabers</li>`;
   html += `<li>Kontoauszug als Nachweis (mit sichtbarem Banklogo, IBAN und Kontoinhabername)</li>`;
   html += `<li>Bitte einen offiziellen Kontoauszug verwenden, kein Screenshot aus einer Banking-App</li>`;
-  html += `<li>Der Auszug darf nicht aelter als 12 Monate sein</li></ul>`;
+  html += `<li>Der Auszug darf nicht älter als 12 Monate sein</li></ul>`;
   html += `<p><strong>Hinweise zu den Dokumenten:</strong></p><ul>`;
   html += `<li>Fotos/Scans bitte als <strong>JPEG oder PNG</strong> senden</li>`;
-  html += `<li>Dateien muessen zwischen <strong>100 KB und 4 MB</strong> gross sein</li>`;
-  html += `<li>Dokumente muessen <strong>gut lesbar</strong> und <strong>vollstaendig</strong> sein</li></ul>`;
-  html += `<p>Sobald wir alle Unterlagen erhalten haben, kuemmern wir uns um die komplette Einrichtung. Sie werden von uns informiert, sobald alles abgeschlossen ist.</p>`;
-  html += `<p>Bei Fragen stehe ich Ihnen gerne zur Verfuegung.</p>`;
-  html += `<p>Beste Gruesse</p>`;
+  html += `<li>Dateien müssen zwischen <strong>100 KB und 4 MB</strong> groß sein</li>`;
+  html += `<li>Dokumente müssen <strong>gut lesbar</strong> und <strong>vollständig</strong> sein</li></ul>`;
+  html += `<p>Sobald wir alle Unterlagen erhalten haben, kümmern wir uns um die komplette Einrichtung. Sie werden von uns informiert, sobald alles abgeschlossen ist.</p>`;
+  html += `<p>Bei Fragen stehe ich Ihnen gerne zur Verfügung.</p>`;
+  html += `<p>Beste Grüße</p>`;
   return html;
 }
 
@@ -190,7 +190,7 @@ function buildReminderMail() {
   }
 
   let html = `<p>Sehr geehrte/r ${name},</p>`;
-  html += `<p>wir warten noch auf einige Unterlagen von Ihnen, um die Einrichtung Ihrer Zahlungsanbindung abzuschliessen.</p>`;
+  html += `<p>wir warten noch auf einige Unterlagen von Ihnen, um die Einrichtung Ihrer Zahlungsanbindung abzuschließen.</p>`;
   if (missing.length > 0) {
     html += `<p><strong>Noch fehlend:</strong></p><ul>`;
     missing.forEach(m => html += `<li>${m.label}</li>`);
@@ -198,8 +198,8 @@ function buildReminderMail() {
   } else {
     html += `<p><strong>Alle Dokumente sind eingegangen!</strong> Wir bearbeiten Ihre Einrichtung jetzt.</p>`;
   }
-  html += `<p>Bitte senden Sie uns die fehlenden Unterlagen, damit wir die Einrichtung fuer Sie abschliessen koennen.</p>`;
-  html += `<p>Beste Gruesse</p>`;
+  html += `<p>Bitte senden Sie uns die fehlenden Unterlagen, damit wir die Einrichtung für Sie abschließen können.</p>`;
+  html += `<p>Beste Grüße</p>`;
   return html;
 }
 
@@ -217,10 +217,10 @@ function buildCompleteMail() {
   }
 
   let html = `<p>Sehr geehrte/r ${name},</p>`;
-  html += `<p>Ihre Zahlungsanbindung ueber Adyen wurde <strong>erfolgreich eingerichtet</strong>.</p>`;
-  html += `<p>Sie erhalten in Kuerze eine separate E-Mail von Adyen mit Ihren Zugangsdaten fuer das Adyen Essentials Portal. Dort koennen Sie Ihre Zahlungsuebersicht einsehen.</p>`;
-  html += `<p>Bei Fragen stehe ich Ihnen gerne zur Verfuegung.</p>`;
-  html += `<p>Beste Gruesse</p>`;
+  html += `<p>Ihre Zahlungsanbindung über Adyen wurde <strong>erfolgreich eingerichtet</strong>.</p>`;
+  html += `<p>Sie erhalten in Kürze eine separate E-Mail von Adyen mit Ihren Zugangsdaten für das Adyen Essentials Portal. Dort können Sie Ihre Zahlungsübersicht einsehen.</p>`;
+  html += `<p>Bei Fragen stehe ich Ihnen gerne zur Verfügung.</p>`;
+  html += `<p>Beste Grüße</p>`;
   return html;
 }
 
@@ -228,14 +228,14 @@ function buildRocketChatMsg() {
   const firma = val('firmenname') || '[KUNDENNAME]';
   const merchantName = val('merchantName') || '[MERCHANT_ID]';
 
-  let html = `<p><strong>Nachricht fuer Rocket Chat #general-client-onboarding:</strong></p>`;
+  let html = `<p><strong>Nachricht für Rocket Chat #general-client-onboarding:</strong></p>`;
   html += `<hr>`;
   html += `<p><code>${firma}</code> is ready for adyen interface connection</p>`;
   html += `<p>[PIPEDRIVE LINK]</p>`;
   html += `<p>Merchant ID = <code>${merchantName}</code></p>`;
   html += `<p>API Key, Client Key und Live prefix: siehe interner Leitfaden Step 6</p>`;
   html += `<hr>`;
-  html += `<p><strong>Benoetigte Werte aus dem Adyen Backend:</strong></p><ul>`;
+  html += `<p><strong>Benötigte Werte aus dem Adyen Backend:</strong></p><ul>`;
   html += `<li><strong>API Key:</strong> Developers > API Credentials > ws@Company.HotelFriend</li>`;
   html += `<li><strong>Client Key:</strong> Gleicher Ort, runterscrollen</li>`;
   html += `<li><strong>Live Prefix:</strong> Developers > API URLs</li>`;

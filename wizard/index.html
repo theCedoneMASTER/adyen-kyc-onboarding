@@ -76,9 +76,9 @@
         <div class="form-group">
           <label class="form-label" for="rechtsform">Rechtsform</label>
           <select id="rechtsform">
-            <option value="">Bitte waehlen...</option>
+            <option value="">Bitte wählen...</option>
             <option value="GmbH">GmbH</option>
-            <option value="UG">UG (haftungsbeschraenkt)</option>
+            <option value="UG">UG (haftungsbeschränkt)</option>
             <option value="AG">AG</option>
             <option value="GbR">GbR</option>
             <option value="OHG">OHG</option>
@@ -93,8 +93,8 @@
           <input type="text" id="hrNummer" placeholder="z.B. HRB 12345">
         </div>
         <div class="form-group">
-          <label class="form-label" for="adresse">Geschaeftsadresse</label>
-          <input type="text" id="adresse" placeholder="Strasse, PLZ, Ort">
+          <label class="form-label" for="adresse">Geschäftsadresse</label>
+          <input type="text" id="adresse" placeholder="Straße, PLZ, Ort">
         </div>
         <div class="form-group">
           <label class="form-label" for="branche">Branche</label>
@@ -129,7 +129,7 @@
           <input type="tel" id="kontaktTel" placeholder="+49 ...">
         </div>
         <div class="form-group">
-          <label class="form-label" for="gfName">Name Geschaeftsfuehrer</label>
+          <label class="form-label" for="gfName">Name Geschäftsführer</label>
           <input type="text" id="gfName" placeholder="Falls abweichend vom Ansprechpartner">
         </div>
       </div>
@@ -150,7 +150,7 @@
         </div>
         <div class="form-group">
           <label class="form-label" for="kontoinhaber">Kontoinhaber</label>
-          <input type="text" id="kontoinhaber" placeholder="Muss mit Firmenname uebereinstimmen">
+          <input type="text" id="kontoinhaber" placeholder="Muss mit Firmenname übereinstimmen">
         </div>
       </div>
 
@@ -204,7 +204,7 @@
           <div class="check-wrap"><div class="check-box"></div></div>
           <div class="label-content">
             <span>Handelsregisterauszug</span>
-            <span class="label-hint">Moeglichst aktuell, alle Seiten, von handelsregister.de</span>
+            <span class="label-hint">Möglichst aktuell, alle Seiten, von handelsregister.de</span>
             <span class="label-warn">Veraltete Daten (z.B. alter GF) = Ablehnung</span>
           </div>
         </label>
@@ -224,7 +224,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/></svg>
           </div>
           <div>
-            <h3>Identitaetsnachweise</h3>
+            <h3>Identitätsnachweise</h3>
             <span class="cat-sub">Ausweise GF & UBOs</span>
           </div>
           <div class="cat-count" id="count-id">0/3</div>
@@ -233,9 +233,9 @@
           <input type="checkbox" class="doc-check" data-doc="ausweis_gf">
           <div class="check-wrap"><div class="check-box"></div></div>
           <div class="label-content">
-            <span>Ausweis Geschaeftsfuehrer</span>
-            <span class="label-hint">Reisepass oder Perso (Vorder- + Rueckseite)</span>
-            <span class="label-warn">Ablaufdatum pruefen - muss gueltig sein!</span>
+            <span>Ausweis Geschäftsführer</span>
+            <span class="label-hint">Reisepass oder Perso (Vorder- + Rückseite)</span>
+            <span class="label-warn">Ablaufdatum prüfen – muss gültig sein!</span>
           </div>
         </label>
         <label>
@@ -244,7 +244,7 @@
           <div class="label-content">
             <span>Ausweis(e) UBO(s)</span>
             <span class="label-hint">Pro UBO mit >25% Anteil</span>
-            <span class="label-warn">Ablaufdatum pruefen - muss gueltig sein!</span>
+            <span class="label-warn">Ablaufdatum prüfen – muss gültig sein!</span>
           </div>
         </label>
         <label>
@@ -275,7 +275,7 @@
           <div class="label-content">
             <span>Kontoauszug</span>
             <span class="label-hint">Banklogo + IBAN + Firmenname sichtbar, kein App-Screenshot</span>
-            <span class="label-warn">Max. 12 Monate alt! Haeufigster Ablehnungsgrund!</span>
+            <span class="label-warn">Max. 12 Monate alt! Häufigster Ablehnungsgrund!</span>
           </div>
         </label>
       </div>
@@ -325,15 +325,15 @@
           <input type="radio" name="mailType" value="initial" checked class="mail-radio">
           <div class="check-wrap"><div class="check-box radio"></div></div>
           <div class="label-content">
-            <span>Erstmail - Dokumente anfordern</span>
-            <span class="label-hint">Alle benoetigten Dokumente auflisten</span>
+            <span>Erstmail – Dokumente anfordern</span>
+            <span class="label-hint">Alle benötigten Dokumente auflisten</span>
           </div>
         </label>
         <label>
           <input type="radio" name="mailType" value="reminder" class="mail-radio">
           <div class="check-wrap"><div class="check-box radio"></div></div>
           <div class="label-content">
-            <span>Erinnerung - Fehlende Dokumente</span>
+            <span>Erinnerung – Fehlende Dokumente</span>
             <span class="label-hint">Nur noch fehlende Dokumente auflisten</span>
           </div>
         </label>
@@ -341,16 +341,16 @@
           <input type="radio" name="mailType" value="complete" class="mail-radio">
           <div class="check-wrap"><div class="check-box radio"></div></div>
           <div class="label-content">
-            <span>Abschluss - Alles fertig</span>
-            <span class="label-hint">Bestaetigung dass Onboarding abgeschlossen ist</span>
+            <span>Abschluss – Alles fertig</span>
+            <span class="label-hint">Bestätigung dass Onboarding abgeschlossen ist</span>
           </div>
         </label>
         <label>
           <input type="radio" name="mailType" value="rocketchat" class="mail-radio">
           <div class="check-wrap"><div class="check-box radio"></div></div>
           <div class="label-content">
-            <span>Rocket Chat - Dev-Team Nachricht</span>
-            <span class="label-hint">Interne Nachricht fuer Backend-Anbindung</span>
+            <span>Rocket Chat – Dev-Team Nachricht</span>
+            <span class="label-hint">Interne Nachricht für Backend-Anbindung</span>
           </div>
         </label>
       </div>
