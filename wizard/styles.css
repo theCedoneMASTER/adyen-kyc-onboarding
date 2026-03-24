@@ -166,6 +166,87 @@ body {
   backdrop-filter: blur(10px);
 }
 
+/* -- CLIENT SELECTOR -- */
+.client-selector {
+  padding: 12px 12px 0;
+}
+.client-list {
+  display: flex; flex-direction: column; gap: 4px;
+  max-height: 180px; overflow-y: auto;
+  margin-bottom: 8px;
+}
+.client-item {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg2);
+  cursor: pointer;
+  transition: all .2s;
+  position: relative;
+}
+.client-item:hover { border-color: var(--accent); background: var(--surface); }
+.client-item.active {
+  border-color: #0abf53;
+  background: rgba(10,191,83,.08);
+  box-shadow: 0 0 0 1px rgba(10,191,83,.2);
+}
+.client-info {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; min-width: 0;
+}
+.client-name {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.client-status {
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  white-space: nowrap; flex-shrink: 0;
+}
+.client-status.progress { color: var(--warn); }
+.client-status.complete { color: var(--success); }
+.client-bar {
+  grid-column: 1 / -1;
+  height: 3px; background: var(--surface);
+  border-radius: 99px; overflow: hidden;
+}
+.client-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--success));
+  border-radius: 99px;
+  transition: width .3s;
+}
+.client-delete {
+  position: absolute; top: 6px; right: 6px;
+  width: 20px; height: 20px;
+  background: none; border: none;
+  color: var(--text3); font-size: 16px; font-weight: 700;
+  cursor: pointer; border-radius: 50%;
+  display: grid; place-items: center;
+  opacity: 0; transition: opacity .2s, color .2s, background .2s;
+  line-height: 1;
+}
+.client-item:hover .client-delete { opacity: 1; }
+.client-delete:hover { color: #ef4444; background: rgba(239,68,68,.1); }
+.client-add {
+  width: 100%;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--accent);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+}
+.client-add:hover {
+  border-color: var(--accent);
+  background: rgba(90,154,247,.08);
+}
+.client-count-pill svg { flex-shrink: 0; }
+
 /* -- STEP NAV -- */
 .steps-nav {
   display: flex; gap: 4px;

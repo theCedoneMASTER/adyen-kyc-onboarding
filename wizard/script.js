@@ -18,7 +18,196 @@ function ripple(e) {
   r.addEventListener('animationend', () => r.remove());
 }
 
-// -- STEP NAVIGATION --
+// ============================================================
+// KUNDEN-VERWALTUNG (Multi-Client LocalStorage)
+// ============================================================
+const STORAGE_KEY = 'adyenKycClients';
+let activeClientId = null;
+
+function getAllClients() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch { return {}; }
+}
+
+function saveAllClients(clients) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(clients));
+}
+
+function getClientData(id) {
+  return getAllClients()[id] || {};
+}
+
+function saveClientData(id, data) {
+  const clients = getAllClients();
+  clients[id] = data;
+  saveAllClients(clients);
+}
+
+function deleteClient(id) {
+  const clients = getAllClients();
+  delete clients[id];
+  saveAllClients(clients);
+}
+
+function generateId() {
+  return 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+}
+
+function getClientDocCount(data) {
+  const docKeys = ['doc_handelsregister', 'doc_gewerbe', 'doc_ausweis_gf', 'doc_ausweis_ubo', 'doc_adressnachweis', 'doc_kontoauszug', 'doc_pcidss'];
+  const checked = docKeys.filter(k => data[k] === true).length;
+  return { checked, total: 7 };
+}
+
+function getClientDisplayName(data) {
+  return data.firmenname || data.kontaktName || 'Neuer Kunde';
+}
+
+// -- Formular ↔ Daten --
+function collectFormData() {
+  const data = {};
+  document.querySelectorAll('.form-group input, .form-group select').forEach(el => {
+    if (el.id) data[el.id] = el.value;
+  });
+  document.querySelectorAll('.doc-check').forEach(el => {
+    data['doc_' + el.dataset.doc] = el.checked;
+  });
+  return data;
+}
+
+function applyFormData(data) {
+  // Felder leeren
+  document.querySelectorAll('.form-group input').forEach(el => { if (el.id) el.value = ''; });
+  document.querySelectorAll('.form-group select').forEach(el => { if (el.id) el.selectedIndex = 0; });
+  document.querySelectorAll('.doc-check').forEach(el => { el.checked = false; });
+
+  // Daten einfüllen
+  Object.entries(data).forEach(([key, value]) => {
+    if (key.startsWith('doc_')) {
+      const docId = key.replace('doc_', '');
+      const el = document.querySelector(`.doc-check[data-doc="${docId}"]`);
+      if (el) el.checked = value;
+    } else {
+      const el = document.getElementById(key);
+      if (el) el.value = value;
+    }
+  });
+}
+
+function saveCurrentClient() {
+  if (!activeClientId) return;
+  const data = collectFormData();
+  saveClientData(activeClientId, data);
+  renderClientSelector();
+}
+
+function switchToClient(id) {
+  activeClientId = id;
+  localStorage.setItem('adyenKycActiveClient', id);
+  const data = getClientData(id);
+  applyFormData(data);
+  updateDocCounts();
+  renderOutput();
+  renderClientSelector();
+}
+
+function createNewClient() {
+  // Aktuellen Kunden speichern
+  if (activeClientId) saveCurrentClient();
+
+  const id = generateId();
+  saveClientData(id, {});
+  switchToClient(id);
+  showStep(1);
+  // Fokus auf Firmenname
+  document.getElementById('firmenname')?.focus();
+}
+
+function removeClient(id) {
+  const clients = getAllClients();
+  const name = getClientDisplayName(clients[id] || {});
+  if (!confirm(`"${name}" wirklich löschen?`)) return;
+
+  deleteClient(id);
+  const remaining = Object.keys(getAllClients());
+  if (remaining.length > 0) {
+    switchToClient(remaining[0]);
+  } else {
+    createNewClient();
+  }
+}
+
+// -- Client Selector rendern --
+function renderClientSelector() {
+  const container = document.getElementById('clientSelector');
+  const clients = getAllClients();
+  const ids = Object.keys(clients);
+
+  let html = '<div class="client-list">';
+
+  ids.forEach(id => {
+    const data = clients[id];
+    const name = getClientDisplayName(data);
+    const { checked, total } = getClientDocCount(data);
+    const pct = Math.round((checked / total) * 100);
+    const isActive = id === activeClientId;
+    const statusClass = checked === total ? 'complete' : checked > 0 ? 'progress' : '';
+
+    html += `<div class="client-item ${isActive ? 'active' : ''}" data-id="${id}">`;
+    html += `  <div class="client-info" data-id="${id}">`;
+    html += `    <span class="client-name">${name}</span>`;
+    html += `    <span class="client-status ${statusClass}">${checked}/${total} Dok.</span>`;
+    html += `  </div>`;
+    html += `  <div class="client-bar"><div class="client-bar-fill" style="width:${pct}%"></div></div>`;
+    html += `  <button class="client-delete" data-id="${id}" title="Kunde löschen">×</button>`;
+    html += `</div>`;
+  });
+
+  html += '</div>';
+  html += '<button class="client-add" id="addClientBtn">+ Neuer Kunde</button>';
+
+  container.innerHTML = html;
+
+  // Event Listeners
+  container.querySelectorAll('.client-info').forEach(el => {
+    el.addEventListener('click', () => {
+      if (activeClientId) saveCurrentClient();
+      switchToClient(el.dataset.id);
+    });
+  });
+  container.querySelectorAll('.client-delete').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeClient(el.dataset.id);
+    });
+  });
+  document.getElementById('addClientBtn')?.addEventListener('click', createNewClient);
+
+  // Topbar Kundenanzahl
+  const activeCount = ids.length;
+  document.getElementById('clientCount').textContent = activeCount;
+}
+
+// -- MIGRATION: Alte Single-Client-Daten übernehmen --
+function migrateOldData() {
+  const oldRaw = localStorage.getItem('adyenKycWizard');
+  if (!oldRaw) return;
+  try {
+    const oldData = JSON.parse(oldRaw);
+    if (Object.keys(oldData).length > 0) {
+      const id = generateId();
+      saveClientData(id, oldData);
+      activeClientId = id;
+      localStorage.setItem('adyenKycActiveClient', id);
+    }
+    localStorage.removeItem('adyenKycWizard');
+  } catch {}
+}
+
+// ============================================================
+// STEP NAVIGATION
+// ============================================================
 let currentStep = 1;
 const stepBtns = document.querySelectorAll('.step-btn');
 const stepPanels = document.querySelectorAll('.step-panel');
@@ -108,7 +297,9 @@ function updateDocCounts() {
   if (text) text.textContent = `${totalChecked} von ${totalAll} Dokumenten erhalten`;
 }
 
-// -- BUILD MAIL HTML --
+// ============================================================
+// BUILD MAIL HTML
+// ============================================================
 function buildInitialMail() {
   const name = val('kontaktName') || '[KUNDENNAME]';
   const firma = val('firmenname') || '[FIRMENNAME]';
@@ -307,51 +498,35 @@ copyBtn.addEventListener('click', async function () {
   }
 });
 
-// -- SAVE/LOAD LOCAL STORAGE --
-function saveData() {
-  const data = {};
-  document.querySelectorAll('.form-group input, .form-group select').forEach(el => {
-    if (el.id) data[el.id] = el.value;
-  });
-  document.querySelectorAll('.doc-check').forEach(el => {
-    data['doc_' + el.dataset.doc] = el.checked;
-  });
-  localStorage.setItem('adyenKycWizard', JSON.stringify(data));
-}
-
-function loadData() {
-  const raw = localStorage.getItem('adyenKycWizard');
-  if (!raw) return;
-  try {
-    const data = JSON.parse(raw);
-    Object.entries(data).forEach(([key, value]) => {
-      if (key.startsWith('doc_')) {
-        const docId = key.replace('doc_', '');
-        const el = document.querySelector(`.doc-check[data-doc="${docId}"]`);
-        if (el) el.checked = value;
-      } else {
-        const el = document.getElementById(key);
-        if (el) el.value = value;
-      }
-    });
-  } catch {}
-}
-
 // -- EVENT LISTENERS --
 document.querySelectorAll('.form-group input, .form-group select').forEach(el => {
-  el.addEventListener('input', () => { saveData(); renderOutput(); });
-  el.addEventListener('change', () => { saveData(); renderOutput(); });
+  el.addEventListener('input', () => { saveCurrentClient(); renderOutput(); });
+  el.addEventListener('change', () => { saveCurrentClient(); renderOutput(); });
 });
 
 document.querySelectorAll('.doc-check').forEach(cb => {
-  cb.addEventListener('change', () => { updateDocCounts(); saveData(); renderOutput(); });
+  cb.addEventListener('change', () => { updateDocCounts(); saveCurrentClient(); renderOutput(); });
 });
 
 document.querySelectorAll('.mail-radio').forEach(r => {
   r.addEventListener('change', () => renderOutput());
 });
 
-// -- INIT --
-loadData();
+// ============================================================
+// INIT
+// ============================================================
+migrateOldData();
+
+const clients = getAllClients();
+const savedActiveId = localStorage.getItem('adyenKycActiveClient');
+
+if (savedActiveId && clients[savedActiveId]) {
+  switchToClient(savedActiveId);
+} else if (Object.keys(clients).length > 0) {
+  switchToClient(Object.keys(clients)[0]);
+} else {
+  createNewClient();
+}
+
 updateDocCounts();
 renderOutput();
