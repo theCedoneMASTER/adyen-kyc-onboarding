@@ -233,13 +233,13 @@ function buildRocketChatMsg() {
   html += `<p><code>${firma}</code> is ready for adyen interface connection</p>`;
   html += `<p>[PIPEDRIVE LINK]</p>`;
   html += `<p>Merchant ID = <code>${merchantName}</code></p>`;
-  html += `<p>API Key, Client Key und Live prefix: siehe interner Leitfaden Step 6</p>`;
   html += `<hr>`;
-  html += `<p><strong>Benötigte Werte aus dem Adyen Backend:</strong></p><ul>`;
-  html += `<li><strong>API Key:</strong> Developers > API Credentials > ws@Company.HotelFriend</li>`;
-  html += `<li><strong>Client Key:</strong> Gleicher Ort, runterscrollen</li>`;
-  html += `<li><strong>Live Prefix:</strong> Developers > API URLs</li>`;
-  html += `<li><strong>Merchant ID:</strong> Copy aus dem Backend</li>`;
+  html += `<p><strong>Hinweis:</strong> API Key, Client Key und Live Prefix sind für jeden Kunden gleich – siehe interner Leitfaden (03_Interner_Leitfaden.md, Schritt 9).</p>`;
+  html += `<p><strong>Kundenspezifisch eintragen:</strong></p><ul>`;
+  html += `<li><strong>Merchant ID:</strong> Copy aus dem Adyen Backend</li>`;
+  html += `<li><strong>Terminal Name:</strong> Frei wählbar (Standort für Rezeption)</li>`;
+  html += `<li><strong>Sale ID:</strong> Frei wählbar (unser Identifier)</li>`;
+  html += `<li><strong>POIID:</strong> In-person payments > Terminals > Gerät anklicken</li>`;
   html += `</ul>`;
   return html;
 }
