@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adyen KYC Onboarding Wizard</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- AMBIENT ORBS -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+    </div>
+    <div>
+      <span class="topbar-title">Adyen<span class="topbar-accent">KYC</span></span>
+      <span class="topbar-sub">Onboarding Wizard</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      <span id="progressText">Schritt 1/3</span>
+    </div>
+    <button id="themeToggle" title="Theme wechseln">
+      <span class="theme-icon">&#127769;</span>
+    </button>
+  </div>
+</header>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- STEP NAVIGATION -->
+    <div class="steps-nav">
+      <button class="step-btn active" data-step="1">
+        <span class="step-num">1</span>
+        <span>Kundendaten</span>
+      </button>
+      <button class="step-btn" data-step="2">
+        <span class="step-num">2</span>
+        <span>Dokumente</span>
+      </button>
+      <button class="step-btn" data-step="3">
+        <span class="step-num">3</span>
+        <span>Mail & Export</span>
+      </button>
+    </div>
+
+    <!-- STEP 1: KUNDENDATEN -->
+    <div class="step-panel active" id="step1">
+      <div class="category" style="--cat-color: 79,142,247">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          </div>
+          <div>
+            <h3>Unternehmen</h3>
+            <span class="cat-sub">Firmendaten</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="firmenname">Firmenname *</label>
+          <input type="text" id="firmenname" placeholder="z.B. Muster Hotel GmbH">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="rechtsform">Rechtsform</label>
+          <select id="rechtsform">
+            <option value="">Bitte waehlen...</option>
+            <option value="GmbH">GmbH</option>
+            <option value="UG">UG (haftungsbeschraenkt)</option>
+            <option value="AG">AG</option>
+            <option value="GbR">GbR</option>
+            <option value="OHG">OHG</option>
+            <option value="KG">KG</option>
+            <option value="Einzelunternehmen">Einzelunternehmen</option>
+            <option value="e.K.">e.K.</option>
+            <option value="Sonstige">Sonstige</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="hrNummer">Handelsregisternummer</label>
+          <input type="text" id="hrNummer" placeholder="z.B. HRB 12345">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="adresse">Geschaeftsadresse</label>
+          <input type="text" id="adresse" placeholder="Strasse, PLZ, Ort">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="branche">Branche</label>
+          <input type="text" id="branche" placeholder="z.B. Hotellerie">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="steuerid">USt-IdNr. / Steuer-ID</label>
+          <input type="text" id="steuerid" placeholder="z.B. DE123456789">
+        </div>
+      </div>
+
+      <div class="category" style="--cat-color: 168,85,247">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          </div>
+          <div>
+            <h3>Ansprechpartner</h3>
+            <span class="cat-sub">Kontakt & GF</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="kontaktName">Name Ansprechpartner *</label>
+          <input type="text" id="kontaktName" placeholder="Vor- und Nachname">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="kontaktEmail">E-Mail *</label>
+          <input type="email" id="kontaktEmail" placeholder="email@beispiel.de">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="kontaktTel">Telefon</label>
+          <input type="tel" id="kontaktTel" placeholder="+49 ...">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="gfName">Name Geschaeftsfuehrer</label>
+          <input type="text" id="gfName" placeholder="Falls abweichend vom Ansprechpartner">
+        </div>
+      </div>
+
+      <div class="category" style="--cat-color: 34,197,94">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          </div>
+          <div>
+            <h3>Bankverbindung</h3>
+            <span class="cat-sub">Auszahlungskonto</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="iban">IBAN</label>
+          <input type="text" id="iban" placeholder="DE89 3704 0044 0532 0130 00">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="kontoinhaber">Kontoinhaber</label>
+          <input type="text" id="kontoinhaber" placeholder="Muss mit Firmenname uebereinstimmen">
+        </div>
+      </div>
+
+      <div class="category" style="--cat-color: 245,158,11">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div>
+            <h3>Adyen Setup</h3>
+            <span class="cat-sub">Konfiguration</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="merchantName">Merchant Account Name</label>
+          <input type="text" id="merchantName" placeholder="Wird in Adyen vergeben">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="paymentType">Payment Type</label>
+          <select id="paymentType">
+            <option value="pos">POS (Terminal)</option>
+            <option value="pos_online">POS + Online</option>
+            <option value="ecommerce">Nur Online (Ecommerce)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="sprache">Kundensprache</label>
+          <select id="sprache">
+            <option value="de">Deutsch</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: DOKUMENTE -->
+    <div class="step-panel" id="step2">
+      <div class="category" style="--cat-color: 79,142,247">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div>
+            <h3>Firmendokumente</h3>
+            <span class="cat-sub">Register & Gewerbe</span>
+          </div>
+          <div class="cat-count" id="count-firma">0/2</div>
+        </div>
+        <label>
+          <input type="checkbox" class="doc-check" data-doc="handelsregister">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>Handelsregisterauszug</span>
+            <span class="label-hint">Moeglichst aktuell, alle Seiten, von handelsregister.de</span>
+            <span class="label-warn">Veraltete Daten (z.B. alter GF) = Ablehnung</span>
+          </div>
+        </label>
+        <label>
+          <input type="checkbox" class="doc-check" data-doc="gewerbe">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>Gewerbeanmeldung / Gewerbeschein</span>
+            <span class="label-hint">GewA 1/2, alle Seiten inkl. Unterschrift</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="category" style="--cat-color: 168,85,247">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/></svg>
+          </div>
+          <div>
+            <h3>Identitaetsnachweise</h3>
+            <span class="cat-sub">Ausweise GF & UBOs</span>
+          </div>
+          <div class="cat-count" id="count-id">0/3</div>
+        </div>
+        <label>
+          <input type="checkbox" class="doc-check" data-doc="ausweis_gf">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>Ausweis Geschaeftsfuehrer</span>
+            <span class="label-hint">Reisepass oder Perso (Vorder- + Rueckseite)</span>
+            <span class="label-warn">Ablaufdatum pruefen - muss gueltig sein!</span>
+          </div>
+        </label>
+        <label>
+          <input type="checkbox" class="doc-check" data-doc="ausweis_ubo">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>Ausweis(e) UBO(s)</span>
+            <span class="label-hint">Pro UBO mit >25% Anteil</span>
+            <span class="label-warn">Ablaufdatum pruefen - muss gueltig sein!</span>
+          </div>
+        </label>
+        <label>
+          <input type="checkbox" class="doc-check" data-doc="adressnachweis">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>Adressnachweis UBO(s)</span>
+            <span class="label-hint">Nebenkosten/Steuerbescheid</span>
+            <span class="label-warn">Max. 3 Monate alt!</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="category" style="--cat-color: 34,197,94">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          </div>
+          <div>
+            <h3>Banknachweis</h3>
+            <span class="cat-sub">Kontoauszug</span>
+          </div>
+          <div class="cat-count" id="count-bank">0/1</div>
+        </div>
+        <label>
+          <input type="checkbox" class="doc-check" data-doc="kontoauszug">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>Kontoauszug</span>
+            <span class="label-hint">Banklogo + IBAN + Firmenname sichtbar, kein App-Screenshot</span>
+            <span class="label-warn">Max. 12 Monate alt! Haeufigster Ablehnungsgrund!</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="category" style="--cat-color: 245,158,11">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <div>
+            <h3>PCI DSS</h3>
+            <span class="cat-sub">Compliance</span>
+          </div>
+          <div class="cat-count" id="count-pci">0/1</div>
+        </div>
+        <label>
+          <input type="checkbox" class="doc-check" data-doc="pcidss">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>PCI DSS SAQ-A (signiert)</span>
+            <span class="label-hint">Vom Kunden elektronisch signiert via DocuSign</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="doc-summary" id="docSummary">
+        <div class="summary-bar">
+          <div class="summary-fill" id="summaryFill"></div>
+        </div>
+        <span id="summaryText">0 von 7 Dokumenten erhalten</span>
+      </div>
+    </div>
+
+    <!-- STEP 3: MAIL & EXPORT -->
+    <div class="step-panel" id="step3">
+      <div class="category" style="--cat-color: 79,142,247">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <div>
+            <h3>Mail-Vorlage</h3>
+            <span class="cat-sub">An Kunden senden</span>
+          </div>
+        </div>
+        <label>
+          <input type="radio" name="mailType" value="initial" checked class="mail-radio">
+          <div class="check-wrap"><div class="check-box radio"></div></div>
+          <div class="label-content">
+            <span>Erstmail - Dokumente anfordern</span>
+            <span class="label-hint">Alle benoetigten Dokumente auflisten</span>
+          </div>
+        </label>
+        <label>
+          <input type="radio" name="mailType" value="reminder" class="mail-radio">
+          <div class="check-wrap"><div class="check-box radio"></div></div>
+          <div class="label-content">
+            <span>Erinnerung - Fehlende Dokumente</span>
+            <span class="label-hint">Nur noch fehlende Dokumente auflisten</span>
+          </div>
+        </label>
+        <label>
+          <input type="radio" name="mailType" value="complete" class="mail-radio">
+          <div class="check-wrap"><div class="check-box radio"></div></div>
+          <div class="label-content">
+            <span>Abschluss - Alles fertig</span>
+            <span class="label-hint">Bestaetigung dass Onboarding abgeschlossen ist</span>
+          </div>
+        </label>
+        <label>
+          <input type="radio" name="mailType" value="rocketchat" class="mail-radio">
+          <div class="check-wrap"><div class="check-box radio"></div></div>
+          <div class="label-content">
+            <span>Rocket Chat - Dev-Team Nachricht</span>
+            <span class="label-hint">Interne Nachricht fuer Backend-Anbindung</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="category" style="--cat-color: 34,197,94">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div>
+            <h3>Quick Links</h3>
+            <span class="cat-sub">Adyen Backend</span>
+          </div>
+        </div>
+        <a href="https://ca-live.adyen.com" target="_blank" class="quick-link">
+          <span>Adyen Customer Area (Live)</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6m4-3h6v6m-11 5L21 3"/></svg>
+        </a>
+        <a href="https://docs.adyen.com/platforms/verification-requirements/document-requirements" target="_blank" class="quick-link">
+          <span>Adyen Dokument-Anforderungen</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6m4-3h6v6m-11 5L21 3"/></svg>
+        </a>
+        <a href="https://handelsregister.de" target="_blank" class="quick-link">
+          <span>Handelsregister (kostenlos)</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6m4-3h6v6m-11 5L21 3"/></svg>
+        </a>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- PREVIEW -->
+  <main class="preview">
+    <div class="preview-topbar">
+      <div class="preview-tabs">
+        <button class="tab active" data-tab="preview">Vorschau</button>
+        <button class="tab" data-tab="html">HTML</button>
+      </div>
+      <button id="copyBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Kopieren
+      </button>
+    </div>
+
+    <div class="preview-body">
+      <div class="mail-chrome">
+        <div class="mail-chrome-bar">
+          <div class="chrome-dot red"></div>
+          <div class="chrome-dot yellow"></div>
+          <div class="chrome-dot green"></div>
+          <span class="chrome-label">Adyen KYC Mail — Vorschau</span>
+        </div>
+        <div id="finalText" class="mail-content"></div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
