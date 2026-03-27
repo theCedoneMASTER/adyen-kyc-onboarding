@@ -74,11 +74,14 @@ function getClientDisplayName(data) {
 // -- Formular ↔ Daten --
 function collectFormData() {
   const data = {};
-  document.querySelectorAll('.form-group input, .form-group select').forEach(el => {
+  document.querySelectorAll('.form-group input, .form-group select, .form-group textarea').forEach(el => {
     if (el.id) data[el.id] = el.value;
   });
   document.querySelectorAll('.doc-check').forEach(el => {
     data['doc_' + el.dataset.doc] = el.checked;
+  });
+  document.querySelectorAll('.status-check').forEach(el => {
+    data['status_' + el.dataset.status] = el.checked;
   });
   return data;
 }
@@ -87,7 +90,9 @@ function applyFormData(data) {
   // Felder leeren
   document.querySelectorAll('.form-group input').forEach(el => { if (el.id) el.value = ''; });
   document.querySelectorAll('.form-group select').forEach(el => { if (el.id) el.selectedIndex = 0; });
+  document.querySelectorAll('.form-group textarea').forEach(el => { if (el.id) el.value = ''; });
   document.querySelectorAll('.doc-check').forEach(el => { el.checked = false; });
+  document.querySelectorAll('.status-check').forEach(el => { el.checked = false; });
 
   // Daten einfüllen
   Object.entries(data).forEach(([key, value]) => {
@@ -95,11 +100,21 @@ function applyFormData(data) {
       const docId = key.replace('doc_', '');
       const el = document.querySelector(`.doc-check[data-doc="${docId}"]`);
       if (el) el.checked = value;
+    } else if (key.startsWith('status_')) {
+      const statusId = key.replace('status_', '');
+      const el = document.querySelector(`.status-check[data-status="${statusId}"]`);
+      if (el) el.checked = value;
     } else {
       const el = document.getElementById(key);
       if (el) el.value = value;
     }
   });
+}
+
+function getClientStatusCount(data) {
+  const statusKeys = ['status_mail_gesendet','status_docs_geprueft','status_merchant_angelegt','status_pci_docusign','status_merchant_request','status_adyen_freigabe','status_terminal_zugewiesen','status_backend_config','status_dev_benachrichtigt','status_user_erstellt'];
+  const checked = statusKeys.filter(k => data[k] === true).length;
+  return { checked, total: 10 };
 }
 
 function saveCurrentClient() {
@@ -115,6 +130,7 @@ function switchToClient(id) {
   const data = getClientData(id);
   applyFormData(data);
   updateDocCounts();
+  updateStatusCount();
   renderOutput();
   renderClientSelector();
 }
@@ -325,7 +341,7 @@ function showStep(n) {
   });
   stepPanels.forEach(p => p.classList.remove('active'));
   document.getElementById(`step${n}`).classList.add('active');
-  document.getElementById('progressText').textContent = `Schritt ${n}/3`;
+  document.getElementById('progressText').textContent = `Schritt ${n}/4`;
   renderOutput();
 }
 
@@ -755,9 +771,26 @@ document.querySelectorAll('.doc-check').forEach(cb => {
   cb.addEventListener('change', () => { updateDocCounts(); saveCurrentClient(); renderOutput(); });
 });
 
+document.querySelectorAll('.status-check').forEach(cb => {
+  cb.addEventListener('change', () => { updateStatusCount(); saveCurrentClient(); });
+});
+
+document.querySelectorAll('.doc-date').forEach(el => {
+  el.addEventListener('change', () => { saveCurrentClient(); });
+});
+
+document.getElementById('kundenNotizen')?.addEventListener('input', () => { saveCurrentClient(); });
+
 document.querySelectorAll('.mail-radio').forEach(r => {
   r.addEventListener('change', () => renderOutput());
 });
+
+function updateStatusCount() {
+  const checks = document.querySelectorAll('.status-check');
+  const checked = [...checks].filter(c => c.checked).length;
+  const el = document.getElementById('count-status');
+  if (el) el.textContent = `${checked}/${checks.length}`;
+}
 
 // ============================================================
 // INIT
@@ -776,6 +809,7 @@ if (savedActiveId && clients[savedActiveId]) {
 }
 
 updateDocCounts();
+updateStatusCount();
 renderOutput();
 
 // ============================================================
