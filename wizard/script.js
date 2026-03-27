@@ -59,7 +59,7 @@ function generateId() {
 
 // -- Filter-State --
 let clientSearchQuery = '';
-let clientViewMode = 'active'; // 'active' | 'archived' | 'all'
+let clientViewMode = 'active'; // 'active' | 'completed' | 'archived' | 'all'
 
 function getClientDocCount(data) {
   const docKeys = ['doc_handelsregister', 'doc_gewerbe', 'doc_ausweis_gf', 'doc_ausweis_ubo', 'doc_adressnachweis', 'doc_kontoauszug', 'doc_pcidss'];
@@ -194,9 +194,11 @@ function renderClientSelector() {
   const filteredIds = allIds.filter(id => {
     const data = clients[id];
     const isArchived = !!data._archived;
+    const isCompleted = !!data._completed;
 
-    // Archiv-Filter
-    if (clientViewMode === 'active' && isArchived) return false;
+    // Filter
+    if (clientViewMode === 'active' && (isArchived || isCompleted)) return false;
+    if (clientViewMode === 'completed' && !isCompleted) return false;
     if (clientViewMode === 'archived' && !isArchived) return false;
 
     // Suchfilter
@@ -215,12 +217,13 @@ function renderClientSelector() {
   html += `<input type="text" class="client-search" id="clientSearch" placeholder="Kunde suchen..." value="${clientSearchQuery}">`;
 
   // Archiv-Toggle
-  const activeCount = allIds.filter(id => !clients[id]._archived).length;
+  const activeCount = allIds.filter(id => !clients[id]._archived && !clients[id]._completed).length;
+  const completedCount = allIds.filter(id => clients[id]._completed && !clients[id]._archived).length;
   const archivedCount = allIds.filter(id => clients[id]._archived).length;
   html += `<div class="archive-toggle">`;
   html += `<button class="archive-toggle-btn ${clientViewMode === 'active' ? 'active' : ''}" data-mode="active">Aktiv (${activeCount})</button>`;
+  html += `<button class="archive-toggle-btn ${clientViewMode === 'completed' ? 'active' : ''}" data-mode="completed">Fertig (${completedCount})</button>`;
   html += `<button class="archive-toggle-btn ${clientViewMode === 'archived' ? 'active' : ''}" data-mode="archived">Archiv (${archivedCount})</button>`;
-  html += `<button class="archive-toggle-btn ${clientViewMode === 'all' ? 'active' : ''}" data-mode="all">Alle</button>`;
   html += `</div>`;
 
   html += '<div class="client-list">';
@@ -236,9 +239,11 @@ function renderClientSelector() {
     const daysOld = getClientDaysOld(data);
     const needsReminder = !isArchived && checked < total && daysOld >= 5;
 
+    const isCompleted = !!data._completed;
     let classes = 'client-item';
     if (isActive) classes += ' active';
     if (isArchived) classes += ' archived';
+    if (isCompleted) classes += ' completed';
 
     html += `<div class="${classes}" data-id="${id}">`;
     html += `  <div class="client-info" data-id="${id}">`;
@@ -305,8 +310,8 @@ function renderClientSelector() {
     });
   });
 
-  // Topbar Kundenanzahl
-  document.getElementById('clientCount').textContent = activeCount;
+  // Topbar Kundenanzahl (nur aktive)
+  document.getElementById('clientCount').textContent = activeCount + completedCount;
 }
 
 // -- MIGRATION: Alte Single-Client-Daten übernehmen --
@@ -772,7 +777,11 @@ document.querySelectorAll('.doc-check').forEach(cb => {
 });
 
 document.querySelectorAll('.status-check').forEach(cb => {
-  cb.addEventListener('change', () => { updateStatusCount(); saveCurrentClient(); });
+  cb.addEventListener('change', () => {
+    updateStatusCount();
+    saveCurrentClient();
+    checkCompletion();
+  });
 });
 
 document.querySelectorAll('.doc-date').forEach(el => {
@@ -790,6 +799,44 @@ function updateStatusCount() {
   const checked = [...checks].filter(c => c.checked).length;
   const el = document.getElementById('count-status');
   if (el) el.textContent = `${checked}/${checks.length}`;
+}
+
+function checkCompletion() {
+  if (!activeClientId) return;
+  const data = collectFormData();
+  const { checked, total } = getClientStatusCount(data);
+  const clients = getAllClients();
+  const wasCompleted = clients[activeClientId]?._completed;
+
+  if (checked === total && !wasCompleted) {
+    // Gerade fertig geworden!
+    clients[activeClientId] = { ...clients[activeClientId], ...data, _completed: true };
+    saveAllClients(clients);
+    renderClientSelector();
+    launchConfetti();
+  }
+}
+
+function launchConfetti() {
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  document.body.appendChild(container);
+
+  const colors = ['#0abf53', '#5a9af7', '#f59e0b', '#ef4444', '#a855f7', '#22c55e', '#3b82f6', '#ec4899'];
+
+  for (let i = 0; i < 80; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.width = (Math.random() * 8 + 5) + 'px';
+    piece.style.height = (Math.random() * 8 + 5) + 'px';
+    piece.style.animationDelay = Math.random() * 1.5 + 's';
+    piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    container.appendChild(piece);
+  }
+
+  setTimeout(() => container.remove(), 5000);
 }
 
 // ============================================================
