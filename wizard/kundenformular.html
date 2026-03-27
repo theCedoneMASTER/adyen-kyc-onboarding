@@ -630,6 +630,24 @@ document.querySelectorAll('.kf-upload').forEach(upload => {
 
   fileInput.addEventListener('change', () => {
     if (fileInput.files.length > 0) {
+      const tooSmall = [...fileInput.files].filter(f => f.size < 100 * 1024);
+      const tooBig = [...fileInput.files].filter(f => f.size > 4 * 1024 * 1024);
+      if (tooSmall.length > 0) {
+        alert(`Datei "${tooSmall[0].name}" ist zu klein (unter 100 KB). Bitte eine höhere Auflösung verwenden.`);
+        fileInput.value = '';
+        filenameEl.textContent = '';
+        upload.classList.remove('has-file');
+        updateProgress();
+        return;
+      }
+      if (tooBig.length > 0) {
+        alert(`Datei "${tooBig[0].name}" ist zu groß (über 4 MB). Bitte komprimieren oder in kleinerer Auflösung scannen.`);
+        fileInput.value = '';
+        filenameEl.textContent = '';
+        upload.classList.remove('has-file');
+        updateProgress();
+        return;
+      }
       const names = [...fileInput.files].map(f => f.name).join(', ');
       filenameEl.textContent = names;
       upload.classList.add('has-file');

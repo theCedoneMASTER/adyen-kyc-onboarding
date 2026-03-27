@@ -1,9 +1,14 @@
 // -- THEME --
 const themeToggle = document.getElementById('themeToggle');
+if (localStorage.getItem('adyenTheme') === 'light') {
+  document.body.classList.add('light');
+  themeToggle.querySelector('.theme-icon').textContent = '\u2600\uFE0F';
+}
 themeToggle.addEventListener('click', () => {
   document.body.classList.toggle('light');
-  themeToggle.querySelector('.theme-icon').textContent =
-    document.body.classList.contains('light') ? '\u2600\uFE0F' : '\uD83C\uDF19';
+  const isLight = document.body.classList.contains('light');
+  themeToggle.querySelector('.theme-icon').textContent = isLight ? '\u2600\uFE0F' : '\uD83C\uDF19';
+  localStorage.setItem('adyenTheme', isLight ? 'light' : 'dark');
 });
 
 // -- RIPPLE --
@@ -131,6 +136,8 @@ function switchToClient(id) {
   applyFormData(data);
   updateDocCounts();
   updateStatusCount();
+  updateStepDone();
+  checkDocDates();
   renderOutput();
   renderClientSelector();
 }
@@ -348,6 +355,7 @@ function showStep(n) {
   document.getElementById(`step${n}`).classList.add('active');
   document.getElementById('progressText').textContent = `Schritt ${n}/4`;
   renderOutput();
+  updateStepDone();
 }
 
 stepBtns.forEach(btn => {
@@ -381,6 +389,12 @@ function getMissingDocs() {
 
 function getMailType() {
   return document.querySelector('input[name="mailType"]:checked')?.value || 'initial';
+}
+
+function buildSignature(lang) {
+  const name = val('absenderName');
+  if (!name) return '';
+  return `<p>${name}</p>`;
 }
 
 // -- DOC LABELS --
@@ -455,6 +469,7 @@ function buildInitialMail() {
     html += `<p>Once we have received all documents, we will take care of the complete setup. You will be notified as soon as everything is finalized.</p>`;
     html += `<p>Please don't hesitate to reach out if you have any questions.</p>`;
     html += `<p>Best regards</p>`;
+    html += buildSignature();
     return html;
   }
 
@@ -482,6 +497,7 @@ function buildInitialMail() {
   html += `<p>Sobald wir alle Unterlagen erhalten haben, kümmern wir uns um die komplette Einrichtung. Sie werden von uns informiert, sobald alles abgeschlossen ist.</p>`;
   html += `<p>Bei Fragen stehe ich Ihnen gerne zur Verfügung.</p>`;
   html += `<p>Beste Grüße</p>`;
+  html += buildSignature();
   return html;
 }
 
@@ -502,6 +518,7 @@ function buildReminderMail() {
     }
     html += `<p>Please send us the missing documents so we can finalize your setup.</p>`;
     html += `<p>Best regards</p>`;
+    html += buildSignature();
     return html;
   }
 
@@ -516,6 +533,7 @@ function buildReminderMail() {
   }
   html += `<p>Bitte senden Sie uns die fehlenden Unterlagen, damit wir die Einrichtung für Sie abschließen können.</p>`;
   html += `<p>Beste Grüße</p>`;
+  html += buildSignature();
   return html;
 }
 
@@ -529,6 +547,7 @@ function buildCompleteMail() {
     html += `<p>You will receive a separate email from Adyen shortly with your access credentials for the Adyen Essentials Portal, where you can view your payment overview.</p>`;
     html += `<p>Please don't hesitate to reach out if you have any questions.</p>`;
     html += `<p>Best regards</p>`;
+    html += buildSignature();
     return html;
   }
 
@@ -537,6 +556,7 @@ function buildCompleteMail() {
   html += `<p>Sie erhalten in Kürze eine separate E-Mail von Adyen mit Ihren Zugangsdaten für das Adyen Essentials Portal. Dort können Sie Ihre Zahlungsübersicht einsehen.</p>`;
   html += `<p>Bei Fragen stehe ich Ihnen gerne zur Verfügung.</p>`;
   html += `<p>Beste Grüße</p>`;
+  html += buildSignature();
   return html;
 }
 
@@ -615,6 +635,7 @@ function buildPciDssMail() {
 
     html += `<p>If you have any questions while filling out the form, please don't hesitate to contact me.</p>`;
     html += `<p>Best regards</p>`;
+    html += buildSignature();
     return html;
   }
 
@@ -686,6 +707,7 @@ function buildPciDssMail() {
 
   html += `<p>Falls Sie beim Ausfüllen Fragen haben, melden Sie sich gerne bei mir.</p>`;
   html += `<p>Beste Grüße</p>`;
+  html += buildSignature();
   return html;
 }
 
@@ -767,13 +789,13 @@ copyBtn.addEventListener('click', async function () {
 });
 
 // -- EVENT LISTENERS --
-document.querySelectorAll('.form-group input, .form-group select').forEach(el => {
-  el.addEventListener('input', () => { saveCurrentClient(); renderOutput(); });
-  el.addEventListener('change', () => { saveCurrentClient(); renderOutput(); });
+document.querySelectorAll('.form-group input, .form-group select, .form-group textarea').forEach(el => {
+  el.addEventListener('input', () => { saveCurrentClient(); renderOutput(); updateStepDone(); });
+  el.addEventListener('change', () => { saveCurrentClient(); renderOutput(); updateStepDone(); });
 });
 
 document.querySelectorAll('.doc-check').forEach(cb => {
-  cb.addEventListener('change', () => { updateDocCounts(); saveCurrentClient(); renderOutput(); });
+  cb.addEventListener('change', () => { updateDocCounts(); saveCurrentClient(); renderOutput(); updateStepDone(); });
 });
 
 document.querySelectorAll('.status-check').forEach(cb => {
@@ -781,6 +803,7 @@ document.querySelectorAll('.status-check').forEach(cb => {
     updateStatusCount();
     saveCurrentClient();
     checkCompletion();
+    updateStepDone();
   });
 });
 
@@ -857,7 +880,127 @@ if (savedActiveId && clients[savedActiveId]) {
 
 updateDocCounts();
 updateStatusCount();
+updateStepDone();
+checkDocDates();
+checkBackupReminder();
 renderOutput();
+
+// ============================================================
+// STEP DONE STATES
+// ============================================================
+function updateStepDone() {
+  const btns = document.querySelectorAll('.step-btn');
+
+  // Step 1: Pflichtfelder ausgefüllt (firmenname, kontaktName, kontaktEmail)
+  const s1Done = val('firmenname') && val('kontaktName') && val('kontaktEmail');
+  btns[0]?.classList.toggle('done', !!s1Done && currentStep !== 1);
+  btns[0]?.classList.toggle('active', currentStep === 1);
+
+  // Step 2: Alle 7 Dokumente
+  const docChecked = [...document.querySelectorAll('.doc-check')].filter(c => c.checked).length;
+  btns[1]?.classList.toggle('done', docChecked === 7 && currentStep !== 2);
+  btns[1]?.classList.toggle('active', currentStep === 2);
+
+  // Step 3: Mindestens 1 Status-Schritt erledigt
+  const statusChecked = [...document.querySelectorAll('.status-check')].filter(c => c.checked).length;
+  btns[2]?.classList.toggle('done', statusChecked === 10 && currentStep !== 3);
+  btns[2]?.classList.toggle('active', currentStep === 3);
+
+  // Step 4: immer neutral (Mail ist kein abschließbarer Step)
+  btns[3]?.classList.toggle('active', currentStep === 4);
+}
+
+// ============================================================
+// DOKUMENT-GÜLTIGKEITSPRÜFUNG
+// ============================================================
+function checkDocDates() {
+  const now = new Date();
+  const warnings = [];
+
+  // Kontoauszug: max 12 Monate
+  const kontoDate = document.getElementById('docDate_kontoauszug')?.value;
+  if (kontoDate) {
+    const d = new Date(kontoDate);
+    const monthsOld = (now - d) / (1000 * 60 * 60 * 24 * 30);
+    if (monthsOld > 11) {
+      warnings.push({ field: 'docDate_kontoauszug', msg: `Kontoauszug ist ${Math.floor(monthsOld)} Monate alt (max. 12)!` });
+    }
+  }
+
+  // Adressnachweis: max 3 Monate
+  const adressDate = document.getElementById('docDate_adressnachweis')?.value;
+  if (adressDate) {
+    const d = new Date(adressDate);
+    const monthsOld = (now - d) / (1000 * 60 * 60 * 24 * 30);
+    if (monthsOld > 2.5) {
+      warnings.push({ field: 'docDate_adressnachweis', msg: `Adressnachweis ist ${Math.floor(monthsOld)} Monate alt (max. 3)!` });
+    }
+  }
+
+  // Warnungen anzeigen
+  document.querySelectorAll('.doc-date-warn').forEach(el => el.remove());
+  warnings.forEach(w => {
+    const input = document.getElementById(w.field);
+    if (input) {
+      input.style.borderColor = 'var(--warn)';
+      const warn = document.createElement('div');
+      warn.className = 'doc-date-warn';
+      warn.style.cssText = 'font-size:11px;color:var(--warn);font-weight:600;margin-top:4px;padding:0 14px 4px';
+      warn.textContent = w.msg;
+      input.closest('.form-group')?.appendChild(warn);
+    }
+  });
+
+  // Keine Warnung → Border zurücksetzen
+  document.querySelectorAll('.doc-date').forEach(el => {
+    if (!warnings.find(w => w.field === el.id)) {
+      el.style.borderColor = '';
+    }
+  });
+}
+
+// Dokument-Daten auch bei Änderung prüfen
+document.querySelectorAll('.doc-date').forEach(el => {
+  el.addEventListener('change', () => { saveCurrentClient(); checkDocDates(); });
+});
+
+// ============================================================
+// BACKUP-ERINNERUNG
+// ============================================================
+function checkBackupReminder() {
+  const lastExport = localStorage.getItem('adyenLastExport');
+  const clients = getAllClients();
+  const clientCount = Object.keys(clients).length;
+
+  if (clientCount < 1) return;
+
+  if (!lastExport) {
+    showBackupHint('Du hast noch nie ein Backup erstellt. Klicke auf "Export" um deine Kundendaten zu sichern.');
+    return;
+  }
+
+  const daysSince = Math.floor((Date.now() - parseInt(lastExport)) / (1000 * 60 * 60 * 24));
+  if (daysSince >= 7) {
+    showBackupHint(`Letztes Backup vor ${daysSince} Tagen. Zeit für ein neues!`);
+  }
+}
+
+function showBackupHint(msg) {
+  const existing = document.getElementById('backupHint');
+  if (existing) return; // Nicht doppelt anzeigen
+
+  const hint = document.createElement('div');
+  hint.id = 'backupHint';
+  hint.style.cssText = 'padding:8px 12px;margin:0 12px 8px;background:var(--warnglow);border:1px solid var(--warn);border-radius:8px;font-size:11px;color:var(--warn);font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px';
+  hint.innerHTML = `<span style="font-size:14px">⚠</span> ${msg}`;
+  hint.addEventListener('click', () => {
+    document.getElementById('exportBtn')?.click();
+    hint.remove();
+  });
+
+  const tools = document.querySelector('.client-tools');
+  tools?.parentNode.insertBefore(hint, tools);
+}
 
 // ============================================================
 // EXPORT / IMPORT
@@ -873,6 +1016,8 @@ document.getElementById('exportBtn')?.addEventListener('click', () => {
   a.download = `adyen-kunden-backup_${date}.json`;
   a.click();
   URL.revokeObjectURL(url);
+  localStorage.setItem('adyenLastExport', Date.now().toString());
+  document.getElementById('backupHint')?.remove();
 });
 
 document.getElementById('importBtn')?.addEventListener('click', () => {
