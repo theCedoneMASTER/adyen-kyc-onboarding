@@ -49,6 +49,19 @@
     <!-- CLIENT SELECTOR -->
     <div id="clientSelector" class="client-selector"></div>
 
+    <!-- CLIENT TOOLS -->
+    <div class="client-tools">
+      <button id="exportBtn" class="client-tool-btn" title="Alle Kundendaten als JSON exportieren (Backup)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Export
+      </button>
+      <button id="importBtn" class="client-tool-btn" title="Kundendaten aus JSON importieren">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        Import
+      </button>
+      <input type="file" id="importFile" accept=".json" style="display:none">
+    </div>
+
     <!-- STEP NAVIGATION -->
     <div class="steps-nav">
       <button class="step-btn active" data-step="1">
@@ -391,6 +404,10 @@
         </a>
         <a href="https://handelsregister.de" target="_blank" class="quick-link">
           <span>Handelsregister (kostenlos)</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6m4-3h6v6m-11 5L21 3"/></svg>
+        </a>
+        <a id="kundenformularLink" href="kundenformular.html" target="_blank" class="quick-link">
+          <span>Kundenformular (für Kunden)</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6m4-3h6v6m-11 5L21 3"/></svg>
         </a>
       </div>

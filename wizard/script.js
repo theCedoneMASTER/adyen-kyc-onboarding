@@ -40,6 +40,9 @@ function getClientData(id) {
 
 function saveClientData(id, data) {
   const clients = getAllClients();
+  if (!data._createdAt) {
+    data._createdAt = clients[id]?._createdAt || Date.now();
+  }
   clients[id] = data;
   saveAllClients(clients);
 }
@@ -53,6 +56,10 @@ function deleteClient(id) {
 function generateId() {
   return 'c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
 }
+
+// -- Filter-State --
+let clientSearchQuery = '';
+let clientViewMode = 'active'; // 'active' | 'archived' | 'all'
 
 function getClientDocCount(data) {
   const docKeys = ['doc_handelsregister', 'doc_gewerbe', 'doc_ausweis_gf', 'doc_ausweis_ubo', 'doc_adressnachweis', 'doc_kontoauszug', 'doc_pcidss'];
@@ -124,10 +131,27 @@ function createNewClient() {
   document.getElementById('firmenname')?.focus();
 }
 
+function archiveClient(id) {
+  const clients = getAllClients();
+  if (!clients[id]) return;
+  clients[id]._archived = !clients[id]._archived;
+  saveAllClients(clients);
+  // Wenn archivierter Kunde aktiv war, zum nächsten aktiven wechseln
+  if (clients[id]._archived && id === activeClientId) {
+    const activeIds = Object.keys(clients).filter(k => !clients[k]._archived);
+    if (activeIds.length > 0) {
+      switchToClient(activeIds[0]);
+    } else {
+      createNewClient();
+    }
+  }
+  renderClientSelector();
+}
+
 function removeClient(id) {
   const clients = getAllClients();
   const name = getClientDisplayName(clients[id] || {});
-  if (!confirm(`"${name}" wirklich löschen?`)) return;
+  if (!confirm(`"${name}" wirklich endgültig löschen?`)) return;
 
   deleteClient(id);
   const remaining = Object.keys(getAllClients());
@@ -138,34 +162,92 @@ function removeClient(id) {
   }
 }
 
+function getClientDaysOld(data) {
+  if (!data._createdAt) return 0;
+  return Math.floor((Date.now() - data._createdAt) / (1000 * 60 * 60 * 24));
+}
+
 // -- Client Selector rendern --
 function renderClientSelector() {
   const container = document.getElementById('clientSelector');
   const clients = getAllClients();
-  const ids = Object.keys(clients);
+  const allIds = Object.keys(clients);
 
-  let html = '<div class="client-list">';
+  // Suche + Filter
+  const query = clientSearchQuery.toLowerCase();
+  const filteredIds = allIds.filter(id => {
+    const data = clients[id];
+    const isArchived = !!data._archived;
 
-  ids.forEach(id => {
+    // Archiv-Filter
+    if (clientViewMode === 'active' && isArchived) return false;
+    if (clientViewMode === 'archived' && !isArchived) return false;
+
+    // Suchfilter
+    if (query) {
+      const name = getClientDisplayName(data).toLowerCase();
+      const email = (data.kontaktEmail || '').toLowerCase();
+      const merchant = (data.merchantName || '').toLowerCase();
+      return name.includes(query) || email.includes(query) || merchant.includes(query);
+    }
+    return true;
+  });
+
+  let html = '';
+
+  // Suchfeld
+  html += `<input type="text" class="client-search" id="clientSearch" placeholder="Kunde suchen..." value="${clientSearchQuery}">`;
+
+  // Archiv-Toggle
+  const activeCount = allIds.filter(id => !clients[id]._archived).length;
+  const archivedCount = allIds.filter(id => clients[id]._archived).length;
+  html += `<div class="archive-toggle">`;
+  html += `<button class="archive-toggle-btn ${clientViewMode === 'active' ? 'active' : ''}" data-mode="active">Aktiv (${activeCount})</button>`;
+  html += `<button class="archive-toggle-btn ${clientViewMode === 'archived' ? 'active' : ''}" data-mode="archived">Archiv (${archivedCount})</button>`;
+  html += `<button class="archive-toggle-btn ${clientViewMode === 'all' ? 'active' : ''}" data-mode="all">Alle</button>`;
+  html += `</div>`;
+
+  html += '<div class="client-list">';
+
+  filteredIds.forEach(id => {
     const data = clients[id];
     const name = getClientDisplayName(data);
     const { checked, total } = getClientDocCount(data);
     const pct = Math.round((checked / total) * 100);
     const isActive = id === activeClientId;
+    const isArchived = !!data._archived;
     const statusClass = checked === total ? 'complete' : checked > 0 ? 'progress' : '';
+    const daysOld = getClientDaysOld(data);
+    const needsReminder = !isArchived && checked < total && daysOld >= 5;
 
-    html += `<div class="client-item ${isActive ? 'active' : ''}" data-id="${id}">`;
+    let classes = 'client-item';
+    if (isActive) classes += ' active';
+    if (isArchived) classes += ' archived';
+
+    html += `<div class="${classes}" data-id="${id}">`;
     html += `  <div class="client-info" data-id="${id}">`;
     html += `    <span class="client-name">${name}</span>`;
-    html += `    <span class="client-status ${statusClass}">${checked}/${total} Dok.</span>`;
+    html += `    <div style="display:flex;align-items:center;gap:5px">`;
+    if (needsReminder) {
+      html += `<span class="client-reminder">${daysOld}d</span>`;
+    }
+    html += `    <span class="client-status ${statusClass}">${checked}/${total}</span>`;
+    html += `    </div>`;
     html += `  </div>`;
     html += `  <div class="client-bar"><div class="client-bar-fill" style="width:${pct}%"></div></div>`;
-    html += `  <button class="client-delete" data-id="${id}" title="Kunde löschen">×</button>`;
+    html += `  <button class="client-archive" data-id="${id}" title="${isArchived ? 'Wiederherstellen' : 'Archivieren'}">${isArchived ? '↩' : '📦'}</button>`;
+    html += `  <button class="client-delete" data-id="${id}" title="Endgültig löschen">×</button>`;
     html += `</div>`;
   });
 
+  if (filteredIds.length === 0) {
+    html += `<div style="padding:12px;text-align:center;font-size:12px;color:var(--text3)">Keine Kunden gefunden</div>`;
+  }
+
   html += '</div>';
-  html += '<button class="client-add" id="addClientBtn">+ Neuer Kunde</button>';
+  if (clientViewMode !== 'archived') {
+    html += '<button class="client-add" id="addClientBtn">+ Neuer Kunde</button>';
+  }
 
   container.innerHTML = html;
 
@@ -176,6 +258,12 @@ function renderClientSelector() {
       switchToClient(el.dataset.id);
     });
   });
+  container.querySelectorAll('.client-archive').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      archiveClient(el.dataset.id);
+    });
+  });
   container.querySelectorAll('.client-delete').forEach(el => {
     el.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -184,8 +272,24 @@ function renderClientSelector() {
   });
   document.getElementById('addClientBtn')?.addEventListener('click', createNewClient);
 
+  // Suchfeld
+  document.getElementById('clientSearch')?.addEventListener('input', (e) => {
+    clientSearchQuery = e.target.value;
+    renderClientSelector();
+    // Fokus zurück aufs Suchfeld
+    const searchEl = document.getElementById('clientSearch');
+    if (searchEl) { searchEl.focus(); searchEl.selectionStart = searchEl.selectionEnd = searchEl.value.length; }
+  });
+
+  // Archiv-Toggle
+  container.querySelectorAll('.archive-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      clientViewMode = btn.dataset.mode;
+      renderClientSelector();
+    });
+  });
+
   // Topbar Kundenanzahl
-  const activeCount = ids.length;
   document.getElementById('clientCount').textContent = activeCount;
 }
 
@@ -584,20 +688,22 @@ function buildRocketChatMsg() {
   return html;
 }
 
+// -- ZENTRALE MAIL-FUNKTION --
+function getMailHtml(mailType) {
+  switch (mailType) {
+    case 'initial':    return buildInitialMail();
+    case 'reminder':   return buildReminderMail();
+    case 'complete':   return buildCompleteMail();
+    case 'pcidss':     return buildPciDssMail();
+    case 'rocketchat': return buildRocketChatMsg();
+    default:           return buildInitialMail();
+  }
+}
+
 // -- RENDER OUTPUT --
 function renderOutput() {
   const finalDiv = document.getElementById('finalText');
-  const mailType = getMailType();
-  let html;
-
-  switch (mailType) {
-    case 'initial':   html = buildInitialMail(); break;
-    case 'reminder':  html = buildReminderMail(); break;
-    case 'complete':  html = buildCompleteMail(); break;
-    case 'pcidss':     html = buildPciDssMail(); break;
-    case 'rocketchat': html = buildRocketChatMsg(); break;
-    default: html = buildInitialMail();
-  }
+  const html = getMailHtml(getMailType());
 
   if (currentTab === 'html') {
     const raw = html.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -615,17 +721,7 @@ function renderOutput() {
 const copyBtn = document.getElementById('copyBtn');
 copyBtn.addEventListener('click', ripple);
 copyBtn.addEventListener('click', async function () {
-  const mailType = getMailType();
-  let html;
-  switch (mailType) {
-    case 'initial':   html = buildInitialMail(); break;
-    case 'reminder':  html = buildReminderMail(); break;
-    case 'complete':  html = buildCompleteMail(); break;
-    case 'pcidss':     html = buildPciDssMail(); break;
-    case 'rocketchat': html = buildRocketChatMsg(); break;
-    default: html = buildInitialMail();
-  }
-
+  const html = getMailHtml(getMailType());
   const text = new DOMParser().parseFromString(html, 'text/html').body.innerText;
 
   try {
@@ -681,3 +777,49 @@ if (savedActiveId && clients[savedActiveId]) {
 
 updateDocCounts();
 renderOutput();
+
+// ============================================================
+// EXPORT / IMPORT
+// ============================================================
+document.getElementById('exportBtn')?.addEventListener('click', () => {
+  const clients = getAllClients();
+  const json = JSON.stringify(clients, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `adyen-kunden-backup_${date}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importBtn')?.addEventListener('click', () => {
+  document.getElementById('importFile')?.click();
+});
+
+document.getElementById('importFile')?.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      const existing = getAllClients();
+      let count = 0;
+      Object.entries(imported).forEach(([id, data]) => {
+        if (!existing[id]) {
+          existing[id] = data;
+          count++;
+        }
+      });
+      saveAllClients(existing);
+      renderClientSelector();
+      alert(`${count} neue Kunden importiert. ${Object.keys(imported).length - count} bereits vorhanden.`);
+    } catch {
+      alert('Fehler: Ungültige JSON-Datei.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
