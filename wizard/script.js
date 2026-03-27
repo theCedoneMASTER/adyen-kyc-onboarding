@@ -837,6 +837,11 @@ function checkCompletion() {
     saveAllClients(clients);
     renderClientSelector();
     launchConfetti();
+  } else if (checked < total && wasCompleted) {
+    // Schritt wurde wieder abgehakt → nicht mehr fertig
+    clients[activeClientId]._completed = false;
+    saveAllClients(clients);
+    renderClientSelector();
   }
 }
 
