@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adyen Onboarding – Kundenformular</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="styles.css">
+<style>
+/* Kundenformular-spezifische Styles */
+.kf-layout {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px 20px 60px;
+  position: relative;
+  z-index: 1;
+}
+
+.kf-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.kf-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.kf-header p {
+  color: var(--text2);
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.kf-section {
+  background: var(--sidebar-cat);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(12px);
+  transition: border-color .2s;
+}
+.kf-section:hover {
+  border-color: var(--border-l);
+}
+
+.kf-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.kf-section-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.kf-section-icon svg {
+  width: 18px;
+  height: 18px;
+  color: #fff;
+}
+.kf-section-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+.kf-section-header .kf-sub {
+  display: block;
+  font-size: 11px;
+  color: var(--text3);
+  font-weight: 500;
+}
+
+.kf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.kf-row.full {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 600px) {
+  .kf-row { grid-template-columns: 1fr; }
+}
+
+.kf-field {
+  margin-bottom: 14px;
+}
+.kf-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 6px;
+  letter-spacing: .3px;
+}
+.kf-field input,
+.kf-field select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color .2s, box-shadow .2s;
+}
+.kf-field input:focus,
+.kf-field select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+.kf-field input::placeholder {
+  color: var(--text3);
+}
+
+/* Upload-Bereich */
+.kf-upload {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  margin-bottom: 10px;
+  position: relative;
+}
+.kf-upload:hover {
+  border-color: var(--accent);
+  background: var(--glow);
+}
+.kf-upload.has-file {
+  border-color: var(--success);
+  background: var(--sucglow);
+}
+.kf-upload input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.kf-upload-icon {
+  margin-bottom: 8px;
+  color: var(--text3);
+}
+.kf-upload-icon svg {
+  width: 32px;
+  height: 32px;
+}
+.kf-upload-text {
+  font-size: 13px;
+  color: var(--text2);
+}
+.kf-upload-text strong {
+  color: var(--accent);
+}
+.kf-upload-hint {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+.kf-upload-filename {
+  font-size: 13px;
+  color: var(--success);
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.kf-doc-item {
+  margin-bottom: 16px;
+}
+.kf-doc-item .kf-doc-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.kf-doc-item .kf-doc-hint {
+  font-size: 11px;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+.kf-doc-item .kf-doc-warn {
+  font-size: 11px;
+  color: var(--warn);
+  margin-bottom: 8px;
+}
+
+/* Fortschrittsanzeige */
+.kf-progress {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.kf-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.kf-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--success));
+  border-radius: 99px;
+  transition: width .4s ease;
+  width: 0%;
+}
+.kf-progress-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  white-space: nowrap;
+}
+
+/* Submit-Button */
+.kf-submit {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #0abf53, #0abf53cc);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform .12s, box-shadow .2s;
+  box-shadow: 0 0 20px rgba(10,191,83,.3);
+}
+.kf-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 30px rgba(10,191,83,.5);
+}
+.kf-submit:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.kf-success-msg {
+  display: none;
+  text-align: center;
+  padding: 40px;
+  background: var(--sidebar-cat);
+  border: 1px solid var(--success);
+  border-radius: 14px;
+  margin-top: 20px;
+}
+.kf-success-msg.show {
+  display: block;
+}
+.kf-success-msg h2 {
+  color: var(--success);
+  margin-bottom: 10px;
+}
+.kf-success-msg p {
+  color: var(--text2);
+  font-size: 14px;
+}
+
+.kf-info-box {
+  background: var(--glow);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+.kf-info-box strong {
+  color: var(--text);
+}
+</style>
+</head>
+<body>
+
+<!-- AMBIENT ORBS -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+    </div>
+    <div>
+      <span class="topbar-title">Adyen<span class="topbar-accent">KYC</span></span>
+      <span class="topbar-sub">Kundenformular</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      <span id="progressText">0% ausgefüllt</span>
+    </div>
+    <button id="themeToggle" title="Theme wechseln">
+      <span class="theme-icon">&#127769;</span>
+    </button>
+  </div>
+</header>
+
+<div class="kf-layout">
+
+  <div class="kf-header">
+    <h1>Onboarding-Unterlagen</h1>
+    <p>Bitte füllen Sie die folgenden Felder aus und laden Sie die benötigten Dokumente hoch. Wir kümmern uns um die komplette Einrichtung Ihrer Zahlungsanbindung.</p>
+  </div>
+
+  <!-- FORTSCHRITT -->
+  <div class="kf-progress">
+    <div class="kf-progress-bar">
+      <div class="kf-progress-fill" id="progressFill"></div>
+    </div>
+    <span class="kf-progress-text" id="progressLabel">0 / 0</span>
+  </div>
+
+  <!-- UNTERNEHMENSDATEN -->
+  <div class="kf-section">
+    <div class="kf-section-header">
+      <div class="kf-section-icon" style="background: linear-gradient(135deg, rgb(79,142,247), rgb(59,122,227))">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      </div>
+      <div>
+        <h2>Unternehmensdaten</h2>
+        <span class="kf-sub">Firmendaten laut Handelsregister</span>
+      </div>
+    </div>
+    <div class="kf-row">
+      <div class="kf-field">
+        <label for="kf-firmenname">Firmenname *</label>
+        <input type="text" id="kf-firmenname" placeholder="z.B. Muster Hotel GmbH" required class="kf-required">
+      </div>
+      <div class="kf-field">
+        <label for="kf-rechtsform">Rechtsform *</label>
+        <select id="kf-rechtsform" required class="kf-required">
+          <option value="">Bitte wählen...</option>
+          <option value="GmbH">GmbH</option>
+          <option value="UG">UG (haftungsbeschränkt)</option>
+          <option value="AG">AG</option>
+          <option value="GbR">GbR</option>
+          <option value="OHG">OHG</option>
+          <option value="KG">KG</option>
+          <option value="Einzelunternehmen">Einzelunternehmen</option>
+          <option value="e.K.">e.K.</option>
+          <option value="Sonstige">Sonstige</option>
+        </select>
+      </div>
+    </div>
+    <div class="kf-row">
+      <div class="kf-field">
+        <label for="kf-hrNummer">Handelsregisternummer</label>
+        <input type="text" id="kf-hrNummer" placeholder="z.B. HRB 12345">
+      </div>
+      <div class="kf-field">
+        <label for="kf-steuerid">USt-IdNr. / Steuer-ID *</label>
+        <input type="text" id="kf-steuerid" placeholder="z.B. DE123456789" required class="kf-required">
+      </div>
+    </div>
+    <div class="kf-row full">
+      <div class="kf-field">
+        <label for="kf-adresse">Geschäftsadresse *</label>
+        <input type="text" id="kf-adresse" placeholder="Straße, PLZ, Ort" required class="kf-required">
+      </div>
+    </div>
+    <div class="kf-row">
+      <div class="kf-field">
+        <label for="kf-branche">Branche / Geschäftsfeld</label>
+        <input type="text" id="kf-branche" placeholder="z.B. Hotellerie, Gastronomie">
+      </div>
+      <div class="kf-field">
+        <label for="kf-website">Website-URL *</label>
+        <input type="url" id="kf-website" placeholder="https://www.beispiel.de" required class="kf-required">
+      </div>
+    </div>
+  </div>
+
+  <!-- ANSPRECHPARTNER / GF -->
+  <div class="kf-section">
+    <div class="kf-section-header">
+      <div class="kf-section-icon" style="background: linear-gradient(135deg, rgb(168,85,247), rgb(148,65,227))">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      </div>
+      <div>
+        <h2>Ansprechpartner & Geschäftsführer</h2>
+        <span class="kf-sub">Kontaktperson und gesetzlicher Vertreter</span>
+      </div>
+    </div>
+    <div class="kf-row">
+      <div class="kf-field">
+        <label for="kf-kontaktName">Name Ansprechpartner *</label>
+        <input type="text" id="kf-kontaktName" placeholder="Vor- und Nachname" required class="kf-required">
+      </div>
+      <div class="kf-field">
+        <label for="kf-kontaktPosition">Position im Unternehmen</label>
+        <input type="text" id="kf-kontaktPosition" placeholder="z.B. Geschäftsführer">
+      </div>
+    </div>
+    <div class="kf-row">
+      <div class="kf-field">
+        <label for="kf-kontaktEmail">E-Mail *</label>
+        <input type="email" id="kf-kontaktEmail" placeholder="email@beispiel.de" required class="kf-required">
+      </div>
+      <div class="kf-field">
+        <label for="kf-kontaktTel">Telefon</label>
+        <input type="tel" id="kf-kontaktTel" placeholder="+49 ...">
+      </div>
+    </div>
+    <div class="kf-row">
+      <div class="kf-field">
+        <label for="kf-gfName">Name Geschäftsführer *</label>
+        <input type="text" id="kf-gfName" placeholder="Vor- und Nachname" required class="kf-required">
+      </div>
+      <div class="kf-field">
+        <label for="kf-gfGeburt">Geburtsdatum Geschäftsführer *</label>
+        <input type="date" id="kf-gfGeburt" required class="kf-required">
+      </div>
+    </div>
+    <div class="kf-row full">
+      <div class="kf-field">
+        <label for="kf-gfAdresse">Wohnadresse Geschäftsführer</label>
+        <input type="text" id="kf-gfAdresse" placeholder="Straße, PLZ, Ort">
+      </div>
+    </div>
+  </div>
+
+  <!-- UBOs -->
+  <div class="kf-section">
+    <div class="kf-section-header">
+      <div class="kf-section-icon" style="background: linear-gradient(135deg, rgb(245,158,11), rgb(225,138,0))">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87m-4-12a4 4 0 010 7.75"/></svg>
+      </div>
+      <div>
+        <h2>Wirtschaftlich Berechtigte (UBOs)</h2>
+        <span class="kf-sub">Personen mit mehr als 25% Firmenanteil</span>
+      </div>
+    </div>
+    <div class="kf-info-box">
+      <strong>Hinweis:</strong> Bitte geben Sie alle Personen an, die mehr als 25% am Unternehmen halten. Falls keine UBOs vorhanden sind (z.B. bei breit gestreuter Beteiligung), lassen Sie die Felder leer.
+    </div>
+    <div id="uboContainer">
+      <div class="kf-ubo-entry" data-ubo="1">
+        <div class="kf-row">
+          <div class="kf-field">
+            <label>Name UBO 1</label>
+            <input type="text" class="kf-ubo-name" placeholder="Vor- und Nachname">
+          </div>
+          <div class="kf-field">
+            <label>Geburtsdatum UBO 1</label>
+            <input type="date" class="kf-ubo-geburt">
+          </div>
+        </div>
+        <div class="kf-row">
+          <div class="kf-field">
+            <label>Anteil am Unternehmen (%)</label>
+            <input type="number" class="kf-ubo-anteil" placeholder="z.B. 50" min="26" max="100">
+          </div>
+          <div class="kf-field">
+            <label>Wohnadresse UBO 1</label>
+            <input type="text" class="kf-ubo-adresse" placeholder="Straße, PLZ, Ort">
+          </div>
+        </div>
+      </div>
+    </div>
+    <button type="button" id="addUboBtn" style="margin-top:10px;padding:8px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;transition:border-color .2s">+ Weiteren UBO hinzufügen</button>
+  </div>
+
+  <!-- BANKVERBINDUNG -->
+  <div class="kf-section">
+    <div class="kf-section-header">
+      <div class="kf-section-icon" style="background: linear-gradient(135deg, rgb(34,197,94), rgb(22,163,74))">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      </div>
+      <div>
+        <h2>Bankverbindung</h2>
+        <span class="kf-sub">Konto für Auszahlungen</span>
+      </div>
+    </div>
+    <div class="kf-row">
+      <div class="kf-field">
+        <label for="kf-iban">IBAN *</label>
+        <input type="text" id="kf-iban" placeholder="DE89 3704 0044 0532 0130 00" required class="kf-required">
+      </div>
+      <div class="kf-field">
+        <label for="kf-kontoinhaber">Kontoinhaber *</label>
+        <input type="text" id="kf-kontoinhaber" placeholder="Muss mit Firmenname übereinstimmen" required class="kf-required">
+      </div>
+    </div>
+  </div>
+
+  <!-- DOKUMENTE HOCHLADEN -->
+  <div class="kf-section">
+    <div class="kf-section-header">
+      <div class="kf-section-icon" style="background: linear-gradient(135deg, rgb(79,142,247), rgb(59,122,227))">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <div>
+        <h2>Dokumente hochladen</h2>
+        <span class="kf-sub">Fotos/Scans als JPEG oder PNG, 100 KB – 4 MB</span>
+      </div>
+    </div>
+
+    <div class="kf-info-box">
+      <strong>Akzeptierte Formate:</strong> JPEG, JPG, PNG (100 KB – 4 MB pro Datei). Dokumente müssen gut lesbar und vollständig sein.
+    </div>
+
+    <!-- Handelsregisterauszug -->
+    <div class="kf-doc-item">
+      <div class="kf-doc-label">Handelsregisterauszug *</div>
+      <div class="kf-doc-hint">Möglichst aktuell, alle Seiten, von handelsregister.de oder Amtsgericht</div>
+      <div class="kf-doc-warn">Veraltete Daten (z.B. alter Geschäftsführer) führen zur Ablehnung!</div>
+      <div class="kf-upload" data-upload="handelsregister">
+        <input type="file" accept=".jpg,.jpeg,.png,.pdf" multiple>
+        <div class="kf-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0-6l-3 3m3-3l3 3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+        <div class="kf-upload-text"><strong>Klicken</strong> oder Datei hierher ziehen</div>
+        <div class="kf-upload-hint">JPEG, PNG oder PDF</div>
+        <div class="kf-upload-filename"></div>
+      </div>
+    </div>
+
+    <!-- Gewerbeanmeldung -->
+    <div class="kf-doc-item">
+      <div class="kf-doc-label">Gewerbeanmeldung / Gewerbeschein *</div>
+      <div class="kf-doc-hint">GewA 1 oder GewA 2, alle Seiten inkl. Unterschriftsseite</div>
+      <div class="kf-upload" data-upload="gewerbe">
+        <input type="file" accept=".jpg,.jpeg,.png,.pdf" multiple>
+        <div class="kf-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0-6l-3 3m3-3l3 3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+        <div class="kf-upload-text"><strong>Klicken</strong> oder Datei hierher ziehen</div>
+        <div class="kf-upload-hint">JPEG, PNG oder PDF</div>
+        <div class="kf-upload-filename"></div>
+      </div>
+    </div>
+
+    <!-- Ausweis GF -->
+    <div class="kf-doc-item">
+      <div class="kf-doc-label">Ausweis Geschäftsführer *</div>
+      <div class="kf-doc-hint">Reisepass oder Personalausweis (Vorder- und Rückseite), gut lesbar</div>
+      <div class="kf-doc-warn">Ablaufdatum prüfen – muss gültig sein!</div>
+      <div class="kf-upload" data-upload="ausweis_gf">
+        <input type="file" accept=".jpg,.jpeg,.png,.pdf" multiple>
+        <div class="kf-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0-6l-3 3m3-3l3 3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+        <div class="kf-upload-text"><strong>Klicken</strong> oder Datei hierher ziehen</div>
+        <div class="kf-upload-hint">JPEG, PNG oder PDF</div>
+        <div class="kf-upload-filename"></div>
+      </div>
+    </div>
+
+    <!-- Ausweis UBO -->
+    <div class="kf-doc-item">
+      <div class="kf-doc-label">Ausweis(e) UBO(s)</div>
+      <div class="kf-doc-hint">Pro UBO mit >25% Anteil – Reisepass oder Personalausweis (beidseitig)</div>
+      <div class="kf-doc-warn">Ablaufdatum prüfen – muss gültig sein!</div>
+      <div class="kf-upload" data-upload="ausweis_ubo">
+        <input type="file" accept=".jpg,.jpeg,.png,.pdf" multiple>
+        <div class="kf-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0-6l-3 3m3-3l3 3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+        <div class="kf-upload-text"><strong>Klicken</strong> oder Datei hierher ziehen</div>
+        <div class="kf-upload-hint">JPEG, PNG oder PDF</div>
+        <div class="kf-upload-filename"></div>
+      </div>
+    </div>
+
+    <!-- Adressnachweis UBO -->
+    <div class="kf-doc-item">
+      <div class="kf-doc-label">Adressnachweis UBO(s)</div>
+      <div class="kf-doc-hint">Nebenkostenabrechnung, Steuerbescheid oder Kontoauszug</div>
+      <div class="kf-doc-warn">Nicht älter als 3 Monate! Keine Mobilfunkrechnung oder Amazon-Rechnung.</div>
+      <div class="kf-upload" data-upload="adressnachweis">
+        <input type="file" accept=".jpg,.jpeg,.png,.pdf" multiple>
+        <div class="kf-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0-6l-3 3m3-3l3 3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+        <div class="kf-upload-text"><strong>Klicken</strong> oder Datei hierher ziehen</div>
+        <div class="kf-upload-hint">JPEG, PNG oder PDF</div>
+        <div class="kf-upload-filename"></div>
+      </div>
+    </div>
+
+    <!-- Kontoauszug -->
+    <div class="kf-doc-item">
+      <div class="kf-doc-label">Kontoauszug *</div>
+      <div class="kf-doc-hint">Mit sichtbarem Banklogo, IBAN und Firmenname – kein App-Screenshot!</div>
+      <div class="kf-doc-warn">Nicht älter als 12 Monate! Häufigster Ablehnungsgrund bei Adyen.</div>
+      <div class="kf-upload" data-upload="kontoauszug">
+        <input type="file" accept=".jpg,.jpeg,.png,.pdf" multiple>
+        <div class="kf-upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10v6m0-6l-3 3m3-3l3 3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+        <div class="kf-upload-text"><strong>Klicken</strong> oder Datei hierher ziehen</div>
+        <div class="kf-upload-hint">JPEG, PNG oder PDF</div>
+        <div class="kf-upload-filename"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABSENDEN -->
+  <button class="kf-submit" id="submitBtn">Unterlagen absenden</button>
+
+  <div class="kf-success-msg" id="successMsg">
+    <h2>Vielen Dank!</h2>
+    <p>Ihre Unterlagen wurden erfolgreich übermittelt. Wir kümmern uns um die Einrichtung und melden uns bei Ihnen, sobald alles abgeschlossen ist.</p>
+  </div>
+
+</div>
+
+<script>
+// -- THEME --
+const themeToggle = document.getElementById('themeToggle');
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('light');
+  themeToggle.querySelector('.theme-icon').textContent =
+    document.body.classList.contains('light') ? '\u2600\uFE0F' : '\uD83C\uDF19';
+});
+
+// -- UPLOAD HANDLING --
+document.querySelectorAll('.kf-upload').forEach(upload => {
+  const fileInput = upload.querySelector('input[type="file"]');
+  const filenameEl = upload.querySelector('.kf-upload-filename');
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length > 0) {
+      const names = [...fileInput.files].map(f => f.name).join(', ');
+      filenameEl.textContent = names;
+      upload.classList.add('has-file');
+    } else {
+      filenameEl.textContent = '';
+      upload.classList.remove('has-file');
+    }
+    updateProgress();
+  });
+
+  // Drag & Drop
+  upload.addEventListener('dragover', e => {
+    e.preventDefault();
+    upload.style.borderColor = 'var(--accent)';
+    upload.style.background = 'var(--glow)';
+  });
+  upload.addEventListener('dragleave', () => {
+    if (!upload.classList.contains('has-file')) {
+      upload.style.borderColor = '';
+      upload.style.background = '';
+    }
+  });
+  upload.addEventListener('drop', e => {
+    e.preventDefault();
+    fileInput.files = e.dataTransfer.files;
+    fileInput.dispatchEvent(new Event('change'));
+  });
+});
+
+// -- UBO HINZUFÜGEN --
+let uboCount = 1;
+document.getElementById('addUboBtn').addEventListener('click', () => {
+  uboCount++;
+  const container = document.getElementById('uboContainer');
+  const entry = document.createElement('div');
+  entry.className = 'kf-ubo-entry';
+  entry.dataset.ubo = uboCount;
+  entry.style.marginTop = '16px';
+  entry.style.paddingTop = '16px';
+  entry.style.borderTop = '1px solid var(--border)';
+  entry.innerHTML = `
+    <div class="kf-row">
+      <div class="kf-field">
+        <label>Name UBO ${uboCount}</label>
+        <input type="text" class="kf-ubo-name" placeholder="Vor- und Nachname">
+      </div>
+      <div class="kf-field">
+        <label>Geburtsdatum UBO ${uboCount}</label>
+        <input type="date" class="kf-ubo-geburt">
+      </div>
+    </div>
+    <div class="kf-row">
+      <div class="kf-field">
+        <label>Anteil am Unternehmen (%)</label>
+        <input type="number" class="kf-ubo-anteil" placeholder="z.B. 50" min="26" max="100">
+      </div>
+      <div class="kf-field">
+        <label>Wohnadresse UBO ${uboCount}</label>
+        <input type="text" class="kf-ubo-adresse" placeholder="Straße, PLZ, Ort">
+      </div>
+    </div>
+  `;
+  container.appendChild(entry);
+});
+
+// -- FORTSCHRITT --
+function updateProgress() {
+  const requiredFields = document.querySelectorAll('.kf-required');
+  const uploads = document.querySelectorAll('.kf-upload');
+  const requiredUploads = document.querySelectorAll('[data-upload="handelsregister"], [data-upload="gewerbe"], [data-upload="ausweis_gf"], [data-upload="kontoauszug"]');
+
+  let filled = 0;
+  let total = requiredFields.length + requiredUploads.length;
+
+  requiredFields.forEach(f => {
+    if (f.value && f.value.trim()) filled++;
+  });
+  requiredUploads.forEach(u => {
+    if (u.classList.contains('has-file')) filled++;
+  });
+
+  const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = filled + ' / ' + total;
+  document.getElementById('progressText').textContent = pct + '% ausgefüllt';
+}
+
+// Input-Events für Fortschritt
+document.querySelectorAll('.kf-required').forEach(el => {
+  el.addEventListener('input', updateProgress);
+  el.addEventListener('change', updateProgress);
+});
+
+// -- ABSENDEN --
+document.getElementById('submitBtn').addEventListener('click', () => {
+  // Pflichtfelder prüfen
+  const requiredFields = document.querySelectorAll('.kf-required');
+  let allFilled = true;
+  requiredFields.forEach(f => {
+    if (!f.value || !f.value.trim()) {
+      f.style.borderColor = 'var(--warn)';
+      allFilled = false;
+    } else {
+      f.style.borderColor = '';
+    }
+  });
+
+  if (!allFilled) {
+    alert('Bitte füllen Sie alle Pflichtfelder (*) aus.');
+    return;
+  }
+
+  // Zusammenfassung erstellen und als Download anbieten
+  let summary = 'ADYEN ONBOARDING – KUNDENDATEN\n';
+  summary += '='.repeat(40) + '\n\n';
+
+  summary += 'UNTERNEHMEN\n';
+  summary += '-'.repeat(20) + '\n';
+  summary += 'Firmenname: ' + (document.getElementById('kf-firmenname')?.value || '') + '\n';
+  summary += 'Rechtsform: ' + (document.getElementById('kf-rechtsform')?.value || '') + '\n';
+  summary += 'HR-Nummer: ' + (document.getElementById('kf-hrNummer')?.value || '') + '\n';
+  summary += 'USt-IdNr.: ' + (document.getElementById('kf-steuerid')?.value || '') + '\n';
+  summary += 'Adresse: ' + (document.getElementById('kf-adresse')?.value || '') + '\n';
+  summary += 'Branche: ' + (document.getElementById('kf-branche')?.value || '') + '\n';
+  summary += 'Website: ' + (document.getElementById('kf-website')?.value || '') + '\n\n';
+
+  summary += 'ANSPRECHPARTNER\n';
+  summary += '-'.repeat(20) + '\n';
+  summary += 'Name: ' + (document.getElementById('kf-kontaktName')?.value || '') + '\n';
+  summary += 'Position: ' + (document.getElementById('kf-kontaktPosition')?.value || '') + '\n';
+  summary += 'E-Mail: ' + (document.getElementById('kf-kontaktEmail')?.value || '') + '\n';
+  summary += 'Telefon: ' + (document.getElementById('kf-kontaktTel')?.value || '') + '\n\n';
+
+  summary += 'GESCHÄFTSFÜHRER\n';
+  summary += '-'.repeat(20) + '\n';
+  summary += 'Name: ' + (document.getElementById('kf-gfName')?.value || '') + '\n';
+  summary += 'Geburtsdatum: ' + (document.getElementById('kf-gfGeburt')?.value || '') + '\n';
+  summary += 'Wohnadresse: ' + (document.getElementById('kf-gfAdresse')?.value || '') + '\n\n';
+
+  // UBOs
+  const uboEntries = document.querySelectorAll('.kf-ubo-entry');
+  uboEntries.forEach((entry, i) => {
+    const name = entry.querySelector('.kf-ubo-name')?.value;
+    if (name) {
+      summary += `UBO ${i + 1}\n`;
+      summary += '-'.repeat(20) + '\n';
+      summary += 'Name: ' + name + '\n';
+      summary += 'Geburtsdatum: ' + (entry.querySelector('.kf-ubo-geburt')?.value || '') + '\n';
+      summary += 'Anteil: ' + (entry.querySelector('.kf-ubo-anteil')?.value || '') + '%\n';
+      summary += 'Adresse: ' + (entry.querySelector('.kf-ubo-adresse')?.value || '') + '\n\n';
+    }
+  });
+
+  summary += 'BANKVERBINDUNG\n';
+  summary += '-'.repeat(20) + '\n';
+  summary += 'IBAN: ' + (document.getElementById('kf-iban')?.value || '') + '\n';
+  summary += 'Kontoinhaber: ' + (document.getElementById('kf-kontoinhaber')?.value || '') + '\n\n';
+
+  summary += 'HOCHGELADENE DOKUMENTE\n';
+  summary += '-'.repeat(20) + '\n';
+  document.querySelectorAll('.kf-upload').forEach(u => {
+    const docName = u.dataset.upload;
+    const hasFile = u.classList.contains('has-file');
+    const filename = u.querySelector('.kf-upload-filename')?.textContent || '';
+    summary += (hasFile ? '[x]' : '[ ]') + ' ' + docName + (hasFile ? ': ' + filename : '') + '\n';
+  });
+
+  // Download als Textdatei
+  const firma = document.getElementById('kf-firmenname')?.value || 'Kunde';
+  const blob = new Blob([summary], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Onboarding_${firma.replace(/[^a-zA-Z0-9äöüÄÖÜß]/g, '_')}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  // Erfolgsmeldung
+  document.getElementById('successMsg').classList.add('show');
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').textContent = 'Bereits abgesendet';
+});
+
+// Init
+updateProgress();
+</script>
+</body>
+</html>
