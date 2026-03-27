@@ -860,6 +860,22 @@ function launchConfetti() {
   }
 
   setTimeout(() => container.remove(), 5000);
+
+  // Easter Egg
+  const egg = document.createElement('div');
+  egg.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10000;pointer-events:none';
+  egg.innerHTML = `
+    <div style="font-size:20px;opacity:0;animation:eggGrow 2s ease forwards">🖕</div>
+    <div style="font-size:16px;font-weight:800;color:#fff;opacity:0;animation:eggText 2s ease 0.8s forwards;text-shadow:0 0 20px rgba(0,0,0,.8);letter-spacing:2px">Bubensahne</div>
+  `;
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes eggGrow { 0%{opacity:0;font-size:20px} 30%{opacity:1} 100%{opacity:1;font-size:min(300px,40vw)} }
+    @keyframes eggText { 0%{opacity:0;transform:scale(0.5)} 100%{opacity:1;transform:scale(1)} }
+  `;
+  document.head.appendChild(style);
+  document.body.appendChild(egg);
+  setTimeout(() => { egg.remove(); style.remove(); }, 5000);
 }
 
 // ============================================================
