@@ -868,19 +868,80 @@ function launchConfetti() {
 
   // Easter Egg
   const egg = document.createElement('div');
-  egg.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10000;pointer-events:none';
+  egg.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;z-index:10000;pointer-events:none';
   egg.innerHTML = `
-    <div style="font-size:20px;opacity:0;animation:eggGrow 2s ease forwards">🖕</div>
-    <div style="font-size:16px;font-weight:800;color:#fff;opacity:0;animation:eggText 2s ease 0.8s forwards;text-shadow:0 0 20px rgba(0,0,0,.8);letter-spacing:2px">Bubensahne</div>
+    <div class="egg-finger-wrap">
+      <div class="egg-finger">🖕</div>
+      <div class="egg-label">Bubensahne</div>
+      <div class="egg-drops"></div>
+    </div>
   `;
   const style = document.createElement('style');
   style.textContent = `
-    @keyframes eggGrow { 0%{opacity:0;font-size:20px} 30%{opacity:1} 100%{opacity:1;font-size:min(300px,40vw)} }
-    @keyframes eggText { 0%{opacity:0;transform:scale(0.5)} 100%{opacity:1;transform:scale(1)} }
+    .egg-finger-wrap { position:relative; display:flex; align-items:center; justify-content:center; }
+    .egg-finger {
+      font-size:20px; opacity:0;
+      animation: eggGrow 2s ease forwards, eggTense 0.3s ease 2.2s forwards, eggRelease 0.2s ease 2.5s forwards;
+    }
+    .egg-label {
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-60%) rotate(-15deg) scale(0);
+      font-size:clamp(12px,3vw,28px); font-weight:900; color:#fff;
+      text-shadow: 0 0 10px rgba(0,0,0,.9), 0 2px 4px rgba(0,0,0,.5);
+      letter-spacing:2px; white-space:nowrap;
+      animation: eggTextPop 0.4s ease 1.5s forwards;
+    }
+    .egg-drops { position:absolute; top:0; left:50%; width:0; height:0; }
+    .egg-drop {
+      position:absolute; width:8px; height:8px; border-radius:50% 50% 50% 0;
+      background:#fff; opacity:0;
+      animation: eggDrip 1.5s ease forwards;
+      transform: rotate(45deg);
+    }
+    @keyframes eggGrow {
+      0% { opacity:0; font-size:20px; }
+      30% { opacity:1; }
+      100% { opacity:1; font-size:min(300px,40vw); }
+    }
+    @keyframes eggTense {
+      0% { transform:scale(1); }
+      100% { transform:scale(1.15) rotate(-5deg); }
+    }
+    @keyframes eggRelease {
+      0% { transform:scale(1.15) rotate(-5deg); }
+      50% { transform:scale(0.95) rotate(3deg); }
+      100% { transform:scale(1) rotate(0deg); }
+    }
+    @keyframes eggTextPop {
+      0% { transform:translate(-50%,-60%) rotate(-15deg) scale(0); }
+      60% { transform:translate(-50%,-60%) rotate(-15deg) scale(1.2); }
+      100% { transform:translate(-50%,-60%) rotate(-15deg) scale(1); }
+    }
+    @keyframes eggDrip {
+      0% { opacity:0.9; transform:rotate(45deg) translate(0,0) scale(1); }
+      100% { opacity:0; transform:rotate(45deg) translate(var(--dx), 120px) scale(0.3); }
+    }
   `;
   document.head.appendChild(style);
   document.body.appendChild(egg);
-  setTimeout(() => { egg.remove(); style.remove(); }, 5000);
+
+  // Tropfen nach dem "Release"
+  setTimeout(() => {
+    const dropsContainer = egg.querySelector('.egg-drops');
+    for (let i = 0; i < 12; i++) {
+      const drop = document.createElement('div');
+      drop.className = 'egg-drop';
+      drop.style.setProperty('--dx', (Math.random() * 80 - 40) + 'px');
+      drop.style.animationDelay = (Math.random() * 0.5) + 's';
+      drop.style.top = (-20 + Math.random() * 40) + 'px';
+      drop.style.left = (Math.random() * 30 - 15) + 'px';
+      drop.style.width = (5 + Math.random() * 8) + 'px';
+      drop.style.height = (5 + Math.random() * 8) + 'px';
+      dropsContainer.appendChild(drop);
+    }
+  }, 2500);
+
+  setTimeout(() => { egg.remove(); style.remove(); }, 5500);
 }
 
 // ============================================================
