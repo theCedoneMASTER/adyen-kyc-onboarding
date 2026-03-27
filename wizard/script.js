@@ -866,60 +866,6 @@ function launchConfetti() {
 
   setTimeout(() => container.remove(), 5000);
 
-  // Easter Egg
-  const egg = document.createElement('div');
-  egg.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;z-index:10000;pointer-events:none';
-  egg.innerHTML = `<div style="position:relative;display:flex;align-items:center;justify-content:center">
-    <div id="eggFinger" style="font-size:20px;opacity:0;transition:font-size 2s ease,opacity 0.5s,transform 0.3s">🖕</div>
-    <div id="eggLabel" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-60%) rotate(-15deg) scale(0);font-size:clamp(14px,3.5vw,32px);font-weight:900;color:#fff;text-shadow:0 0 15px rgba(0,0,0,.9),0 3px 6px rgba(0,0,0,.5);letter-spacing:3px;white-space:nowrap;transition:transform 0.4s cubic-bezier(.22,1,.36,1)">Bubensahne</div>
-    <div id="eggDrops" style="position:absolute;top:50%;left:50%;width:0;height:0"></div>
-  </div>`;
-  document.body.appendChild(egg);
-
-  const finger = egg.querySelector('#eggFinger');
-  const label = egg.querySelector('#eggLabel');
-  const drops = egg.querySelector('#eggDrops');
-
-  // Phase 1: Finger wächst (0-2s)
-  requestAnimationFrame(() => {
-    finger.style.opacity = '1';
-    finger.style.fontSize = 'min(300px, 40vw)';
-  });
-
-  // Phase 2: Text erscheint auf dem Finger (1.5s)
-  setTimeout(() => {
-    label.style.transform = 'translate(-50%,-60%) rotate(-15deg) scale(1)';
-  }, 1500);
-
-  // Phase 3: Finger spannt sich an (2.5s)
-  setTimeout(() => {
-    finger.style.transition = 'transform 0.3s ease';
-    finger.style.transform = 'scale(1.2) rotate(-5deg)';
-  }, 2500);
-
-  // Phase 4: Finger schnellt zurück + Tropfen spritzen (2.8s)
-  setTimeout(() => {
-    finger.style.transform = 'scale(1) rotate(0deg)';
-    // Tropfen erzeugen
-    for (let i = 0; i < 15; i++) {
-      const drop = document.createElement('div');
-      const dx = (Math.random() - 0.5) * 200;
-      const dy = 80 + Math.random() * 150;
-      const size = 4 + Math.random() * 10;
-      const delay = Math.random() * 0.3;
-      drop.style.cssText = `position:absolute;width:${size}px;height:${size}px;background:#fff;border-radius:50%;opacity:0.9;transition:all 1.2s cubic-bezier(.25,.46,.45,.94) ${delay}s;transform:translate(0,0) scale(1);box-shadow:0 0 6px rgba(255,255,255,.6)`;
-      drops.appendChild(drop);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          drop.style.transform = `translate(${dx}px, ${dy}px) scale(0.2)`;
-          drop.style.opacity = '0';
-        });
-      });
-    }
-  }, 2800);
-
-  // Aufräumen
-  setTimeout(() => egg.remove(), 6000);
 }
 
 // ============================================================
