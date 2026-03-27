@@ -424,28 +424,70 @@ function buildPciDssMail() {
   if (lang === 'en') {
     let html = `<p>Dear ${name},</p>`;
     html += `<p>As part of the Adyen onboarding, you will receive a link to the <strong>PCI DSS Self-Assessment Questionnaire A (SAQ A)</strong>. This document needs to be filled out and signed by you.</p>`;
-    html += `<p><strong>Don't worry – it looks more complex than it is.</strong> Here is a brief overview:</p>`;
-    html += `<h3>What is this document?</h3>`;
+    html += `<p><strong>Don't worry – it looks more complex than it is.</strong> The document is about 30 pages long, but most of it is already pre-filled. Below you will find a detailed summary and step-by-step instructions.</p>`;
+
+    html += `<h3>1. What is this document?</h3>`;
     html += `<ul>`;
-    html += `<li>The SAQ A is <strong>not an additional contract</strong>, but a standardized self-assessment for PCI DSS compliance (Payment Card Industry Data Security Standard).</li>`;
-    html += `<li>Every company that accepts credit card payments must complete this – from small boutique hotels to large chains.</li>`;
-    html += `<li>Since you outsource all card data processing to Adyen, the questionnaire is largely pre-filled for you.</li>`;
+    html += `<li>The SAQ A is <strong>not an additional contract</strong>, but the so-called PCI DSS Self-Assessment Questionnaire A – a standardized self-assessment for PCI DSS compliance (Payment Card Industry Data Security Standard).</li>`;
+    html += `<li>PCI DSS is the international security standard for handling credit card data. <strong>Every company</strong> that accepts card payments must comply – this applies equally to small boutique hotels and large chains.</li>`;
+    html += `<li>The questionnaire is in version 4.0.1 (as of January 2025) and is specifically designed for merchants who outsource all card data processing to a PCI-certified service provider like Adyen and do not electronically store, process, or transmit any card data themselves.</li>`;
+    html += `<li>Since you outsource all card data processing to Adyen, the questionnaire is <strong>largely pre-filled</strong> for you.</li>`;
     html += `</ul>`;
-    html += `<h3>What you confirm by signing:</h3>`;
-    html += `<ol>`;
-    html += `<li><strong>Outsourcing of card data processing:</strong> All storage, processing and transmission of card data is handled entirely by Adyen – not on your own systems.</li>`;
-    html += `<li><strong>Payment page:</strong> Your checkout page delivers all sensitive elements (payment fields) directly from Adyen (e.g. via redirect or embedded iframe).</li>`;
-    html += `<li><strong>Basic security measures:</strong> No default passwords, individual user accounts, regular security updates, and a contact plan in case of security incidents.</li>`;
-    html += `</ol>`;
-    html += `<h3>What you need to do:</h3>`;
-    html += `<ol>`;
-    html += `<li>Open the DocuSign link you received.</li>`;
-    html += `<li>In <strong>"Adyen Company Account Name"</strong> enter: <code>${merchantName}</code></li>`;
-    html += `<li>Fill in the red-marked fields with your company details (company name, address, contact person, website URL).</li>`;
-    html += `<li>The security questions (Section 3, pages 2-3) are already pre-filled with "X" – please review them.</li>`;
-    html += `<li>At the end of the document (Part 3b), sign with your name and date.</li>`;
-    html += `</ol>`;
-    html += `<p><strong>Important:</strong> The document must be signed by someone authorized to sign off on security-related matters (e.g. Managing Director, CTO, or IT Manager).</p>`;
+
+    html += `<h3>2. What you confirm by signing</h3>`;
+    html += `<p>By signing, you essentially confirm the following:</p>`;
+
+    html += `<p><strong>a) Outsourcing of card data processing</strong></p>`;
+    html += `<ul>`;
+    html += `<li>You only accept card-not-present (e-commerce) transactions through Adyen.</li>`;
+    html += `<li>Storage, processing and transmission of card data is handled entirely by Adyen or other PCI-compliant service providers – not on your own systems.</li>`;
+    html += `<li>You do not electronically store any card data on your own systems or servers.</li>`;
+    html += `</ul>`;
+
+    html += `<p><strong>b) Payment page and technical integration</strong></p>`;
+    html += `<ul>`;
+    html += `<li>Your checkout page is set up so that all sensitive parts (forms, payment fields, etc.) are delivered directly from Adyen or another PCI-compliant payment service provider (e.g. via redirect or embedded payment forms/iframes).</li>`;
+    html += `<li>You ensure that your website is not susceptible to script-based attacks that could manipulate the payment page or intercept card data (e.g. through regular updates, security patches, and basic protective measures).</li>`;
+    html += `</ul>`;
+
+    html += `<p><strong>c) Third-party service providers</strong></p>`;
+    html += `<ul>`;
+    html += `<li>You maintain a list of all service providers that could see card data in your payment flow or affect the security of your payment environment (e.g. hosting provider, payment service provider).</li>`;
+    html += `<li>You confirm that these service providers are PCI-compliant and that written agreements exist with clearly defined responsibilities for the protection of card data (e.g. the Adyen Merchant Agreement).</li>`;
+    html += `</ul>`;
+
+    html += `<p><strong>d) Basic security measures in your organization</strong></p>`;
+    html += `<ul>`;
+    html += `<li>No default passwords/accounts are still active – all default access has been removed or securely changed.</li>`;
+    html += `<li>All users have individual logins (no generic/shared accounts), and access is immediately revoked when employees leave the company or change roles.</li>`;
+    html += `<li>Strong passwords and where necessary multi-factor authentication (MFA) for access to relevant systems.</li>`;
+    html += `<li>You monitor security advisories and install security updates and patches promptly, especially for critical vulnerabilities.</li>`;
+    html += `<li>You perform regular external vulnerability scans by a PCI-approved scanning vendor (ASV) at least once per quarter and after significant changes.</li>`;
+    html += `</ul>`;
+
+    html += `<p><strong>e) Handling of paper records</strong></p>`;
+    html += `<ul>`;
+    html += `<li>If you had paper receipts or reports with complete card data, they would be securely stored (e.g. in locked cabinets) and securely destroyed after the retention period (e.g. cross-cut shredder).</li>`;
+    html += `<li>In the present document, it is already noted that you factually do not store card data, therefore many of these points are marked as <em>"not applicable"</em>.</li>`;
+    html += `</ul>`;
+
+    html += `<p><strong>f) Incident response plan</strong></p>`;
+    html += `<ul>`;
+    html += `<li>You have an incident response plan for security incidents, which includes: who does what, who you inform (including Adyen), and how you secure business operations and data in case of a security incident.</li>`;
+    html += `</ul>`;
+
+    html += `<h3>3. Document structure – what you actually need to do</h3>`;
+    html += `<ul>`;
+    html += `<li><strong>First pages (Section 1):</strong> Master data for your company (name, address, website, contact person), description of payment processes and involved service providers. All empty red-marked fields must be filled in by you.</li>`;
+    html += `<li>In the field <strong>"Adyen Company Account Name"</strong> please enter: <code>${merchantName}</code></li>`;
+    html += `<li>At two places you will be asked for <strong>"URL"</strong> or <strong>"Website URL(s)"</strong>. Please enter the website where you will sell with Adyen as payment service provider.</li>`;
+    html += `<li><strong>Middle section (Section 2-3):</strong> Security questionnaire. The questions about security measures (passwords, scans, third parties, incident response, etc.) are <strong>already pre-filled</strong> in the Adyen-provided version. You only need to review and if necessary correct/supplement.</li>`;
+    html += `<li><strong>Last pages (Section 3, Part 3b):</strong> Attestation of Compliance – the confirmation that must be <strong>signed by an authorized person</strong> (e.g. Managing Director, CTO, or IT Manager) with name and date.</li>`;
+    html += `</ul>`;
+
+    html += `<h3>4. Should you fill out this document?</h3>`;
+    html += `<p>Yes. Every legally independent company that uses its own merchant account at Adyen must submit its own PCI SAQ A. This document is part of the standard PCI obligations for your online business.</p>`;
+
     html += `<p>If you have any questions while filling out the form, please don't hesitate to contact me.</p>`;
     html += `<p>Best regards</p>`;
     return html;
@@ -453,32 +495,70 @@ function buildPciDssMail() {
 
   let html = `<p>Sehr geehrte/r ${name},</p>`;
   html += `<p>im Rahmen des Adyen-Onboardings erhalten Sie einen Link zum <strong>PCI DSS Self-Assessment Questionnaire A (SAQ A)</strong>. Dieses Dokument muss von Ihnen ausgefüllt und unterschrieben werden.</p>`;
-  html += `<p><strong>Keine Sorge – es sieht komplizierter aus als es ist.</strong> Hier eine kurze Übersicht:</p>`;
+  html += `<p><strong>Keine Sorge – es sieht komplizierter aus als es ist.</strong> Das Dokument umfasst ca. 30 Seiten, aber das meiste ist bereits vorausgefüllt. Im Folgenden finden Sie eine ausführliche Zusammenfassung und eine Schritt-für-Schritt-Anleitung.</p>`;
 
-  html += `<h3>Worum geht es bei dem Dokument?</h3>`;
+  html += `<h3>1. Worum geht es bei dem Dokument?</h3>`;
   html += `<ul>`;
-  html += `<li>Der SAQ A ist <strong>kein zusätzlicher Vertrag</strong>, sondern eine standardisierte Selbstauskunft zur PCI DSS Compliance (Payment Card Industry Data Security Standard).</li>`;
-  html += `<li>Jedes Unternehmen, das Kreditkartenzahlungen akzeptiert, muss diesen Fragebogen ausfüllen – vom kleinen Boutiquehotel bis zur großen Kette.</li>`;
-  html += `<li>Da Sie die gesamte Kartendatenverarbeitung an Adyen auslagern, ist der Fragebogen größtenteils bereits für Sie vorausgefüllt.</li>`;
+  html += `<li>Das Dokument ist <strong>kein zusätzlicher Vertrag</strong>, sondern der sogenannte PCI DSS Self-Assessment Questionnaire A (SAQ A) – eine standardisierte Selbstauskunft zur PCI DSS Compliance (Payment Card Industry Data Security Standard).</li>`;
+  html += `<li>PCI DSS ist der internationale Sicherheitsstandard für den Umgang mit Kreditkartendaten. <strong>Alle Unternehmen</strong>, die Kartenzahlungen akzeptieren, müssen diesen Standard erfüllen – daher ist Adyen verpflichtet, diese Selbstauskunft von Ihnen einzuholen.</li>`;
+  html += `<li>Der Fragebogen liegt in der Version 4.0.1 (Stand Januar 2025) vor und ist speziell für Händler gedacht, die alle Kartendatenverarbeitung an einen PCI-zertifizierten Dienstleister wie Adyen auslagern und selbst keine Kartendaten elektronisch speichern, verarbeiten oder übertragen.</li>`;
+  html += `<li>Da Sie die gesamte Kartendatenverarbeitung an Adyen auslagern, ist der Fragebogen <strong>größtenteils bereits für Sie vorausgefüllt</strong>.</li>`;
   html += `</ul>`;
 
-  html += `<h3>Was Sie mit Ihrer Unterschrift bestätigen:</h3>`;
-  html += `<ol>`;
-  html += `<li><strong>Auslagerung der Kartendatenverarbeitung:</strong> Speicherung, Verarbeitung und Übermittlung von Kartendaten erfolgt vollständig bei Adyen – nicht auf Ihren eigenen Systemen.</li>`;
-  html += `<li><strong>Zahlungsseite:</strong> Ihre Bezahlseite liefert alle sensiblen Elemente (Zahlungsfelder) direkt von Adyen (z.B. per Redirect oder eingebettetem iframe).</li>`;
-  html += `<li><strong>Basis-Sicherheitsmaßnahmen:</strong> Keine Standard-Passwörter, individuelle Benutzerkonten, regelmäßige Sicherheitsupdates und ein Notfallplan bei Sicherheitsvorfällen.</li>`;
-  html += `</ol>`;
+  html += `<h3>2. Was Sie mit Ihrer Unterschrift bestätigen</h3>`;
+  html += `<p>Mit Ihrer Unterschrift bestätigen Sie im Wesentlichen Folgendes:</p>`;
 
-  html += `<h3>Was Sie konkret tun müssen:</h3>`;
-  html += `<ol>`;
-  html += `<li>Öffnen Sie den DocuSign-Link den Sie erhalten haben.</li>`;
+  html += `<p><strong>a) Auslagerung der Kartendatenverarbeitung</strong></p>`;
+  html += `<ul>`;
+  html += `<li>Sie akzeptieren nur E-Commerce / card-not-present Zahlungen über Adyen.</li>`;
+  html += `<li>Speicherung, Verarbeitung und Übermittlung von Kartendaten erfolgt vollständig bei Adyen bzw. anderen PCI-konformen Dienstleistern – nicht auf Ihren eigenen Systemen.</li>`;
+  html += `<li>Sie speichern keine Kartendaten elektronisch in Ihren eigenen Systemen oder auf Ihren Servern.</li>`;
+  html += `</ul>`;
+
+  html += `<p><strong>b) Zahlungsseite und technische Anbindung</strong></p>`;
+  html += `<ul>`;
+  html += `<li>Ihre Bezahlseite ist so aufgebaut, dass alle sensiblen Teile (Formulare, Zahlungsfelder etc.) direkt von Adyen bzw. einem anderen PCI-konformen Zahlungsdienstleister geliefert werden (z.B. durch Redirect oder eingebettete Zahlungsformulare/iframes).</li>`;
+  html += `<li>Sie stellen sicher, dass Ihre Website nicht für Script-Angriffe anfällig ist, die die Zahlungsseite manipulieren oder Kartendaten abgreifen könnten (z.B. durch regelmäßige Updates, Sicherheitspatches und grundlegende Schutzmaßnahmen).</li>`;
+  html += `</ul>`;
+
+  html += `<p><strong>c) Umgang mit Dritten (Third-Party Service Provider)</strong></p>`;
+  html += `<ul>`;
+  html += `<li>Sie führen eine Liste aller Dienstleister, die in Ihrem Zahlungsprozess Kartendaten sehen könnten oder die Sicherheit Ihrer Zahlungsumgebung beeinflussen (z.B. Hosting-Provider, Zahlungsdienstleister).</li>`;
+  html += `<li>Sie bestätigen, dass diese Dienstleister PCI-konform sind und dass es schriftliche Vereinbarungen mit klar geregelten Verantwortlichkeiten beim Schutz der Kartendaten gibt (z.B. der Vertrag mit Adyen).</li>`;
+  html += `</ul>`;
+
+  html += `<p><strong>d) Basis-Sicherheitsmaßnahmen in Ihrem Unternehmen</strong></p>`;
+  html += `<ul>`;
+  html += `<li>Keine Standardpasswörter / Standardkonten mehr aktiv – alle Standard-Zugänge wurden entfernt oder sicher geändert.</li>`;
+  html += `<li>Alle Benutzer haben individuelle Logins (keine generischen/Shared Accounts), und Zugänge werden sofort entzogen, wenn Mitarbeiter das Unternehmen verlassen oder die Rolle wechseln.</li>`;
+  html += `<li>Starke Passwörter und wo nötig Multi-Faktor-Authentifizierung (MFA) für Zugriffe auf relevante Systeme.</li>`;
+  html += `<li>Sie verfolgen Sicherheitsmeldungen (z.B. über bekannte Schwachstellen) und spielen Sicherheits-Updates und Patches zeitnah ein, insbesondere bei kritischen Lücken.</li>`;
+  html += `<li>Sie führen regelmäßig externe Schwachstellenscans durch einen PCI-zugelassenen Scannerdienst (ASV) durch (mindestens einmal pro Quartal und nach größeren Änderungen an der Umgebung).</li>`;
+  html += `</ul>`;
+
+  html += `<p><strong>e) Umgang mit physischen Unterlagen (Papier)</strong></p>`;
+  html += `<ul>`;
+  html += `<li>Falls Sie Papierbelege oder Auswertungen mit vollständigen Kartendaten hätten, würden diese sicher aufbewahrt (z.B. in verschlossenen Schränken) und nach Ablauf der Aufbewahrungsfrist sicher vernichtet (z.B. Kreuzschnitt-Schredder).</li>`;
+  html += `<li>Im vorliegenden Dokument ist bereits vermerkt, dass Sie faktisch keine Kartendaten speichern, daher sind viele dieser Punkte als <em>„nicht anwendbar"</em> markiert.</li>`;
+  html += `</ul>`;
+
+  html += `<p><strong>f) Incident-Response / Notfallplan</strong></p>`;
+  html += `<ul>`;
+  html += `<li>Sie verfügen über einen Incident-Response-Plan für Sicherheitsvorfälle, der u.a. regelt: wer was tut, wen Sie informieren (inkl. Adyen), wie Sie Geschäftsbetrieb und Daten sichern, falls es doch einmal zu einem Sicherheitsvorfall kommen sollte.</li>`;
+  html += `</ul>`;
+
+  html += `<h3>3. Aufbau des Dokuments – was Sie tatsächlich tun müssen</h3>`;
+  html += `<ul>`;
+  html += `<li><strong>Erste Seiten (Section 1):</strong> Stammdaten zu Ihrem Unternehmen (Name, Adresse, Website, Kontaktperson), Beschreibung der Zahlungsprozesse und der involvierten Dienstleister. Sämtliche leeren rot markierten Felder müssen von Ihnen ausgefüllt werden.</li>`;
   html += `<li>Im Feld <strong>„Adyen Company Account Name"</strong> tragen Sie bitte ein: <code>${merchantName}</code></li>`;
-  html += `<li>Füllen Sie die rot markierten Felder mit Ihren Unternehmensdaten aus (Firmenname, Adresse, Ansprechpartner, Website-URL).</li>`;
-  html += `<li>Die Sicherheitsfragen (Section 3, Seite 2-3) sind bereits mit „X" vorausgefüllt – bitte prüfen Sie diese.</li>`;
-  html += `<li>Am Ende des Dokuments (Part 3b) unterschreiben Sie mit Name und Datum.</li>`;
-  html += `</ol>`;
+  html += `<li>An zwei Stellen werden Sie nach <strong>„URL"</strong> bzw. <strong>„Website URL(s)"</strong> gefragt. Dort tragen Sie bitte jeweils die Webseite ein, auf der Sie künftig mit Adyen als Zahlungsdienstleister verkaufen wollen.</li>`;
+  html += `<li><strong>Mittlerer Teil (Section 2-3):</strong> Fragenkatalog zu den oben genannten Sicherheitsmaßnahmen (Passwörter, Scans, Umgang mit Dritten, Incident-Response etc.). Viele Felder sind bei der von Adyen bereitgestellten Version <strong>bereits automatisch ausgefüllt</strong> oder vorkonfiguriert; Sie müssen diese Angaben nur prüfen und ggf. ergänzen/korrigieren.</li>`;
+  html += `<li><strong>Letzte Seiten (Section 3, Part 3b):</strong> Attestation of Compliance / Bestätigung – hier muss eine <strong>zeichnungsberechtigte Person</strong> (z.B. Geschäftsführer, CTO oder IT-Verantwortlicher) mit Name und Datum unterschreiben.</li>`;
+  html += `</ul>`;
 
-  html += `<p><strong>Wichtig:</strong> Das Dokument muss von einer Person unterschrieben werden, die zur Unterschrift in sicherheitsrelevanten Angelegenheiten berechtigt ist (z.B. Geschäftsführer, CTO oder IT-Verantwortlicher).</p>`;
+  html += `<h3>4. Muss ich das Dokument ausfüllen?</h3>`;
+  html += `<p>Ja. Jede rechtlich eigenständige Gesellschaft, die ein eigenes Händlerkonto bei Adyen nutzt, muss ihren eigenen PCI SAQ A abgeben. Das Dokument ist Teil der Standard-PCI-Pflichten für Ihren Online-Geschäftsbetrieb.</p>`;
+
   html += `<p>Falls Sie beim Ausfüllen Fragen haben, melden Sie sich gerne bei mir.</p>`;
   html += `<p>Beste Grüße</p>`;
   return html;
