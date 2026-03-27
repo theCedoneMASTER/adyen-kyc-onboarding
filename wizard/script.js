@@ -415,6 +415,75 @@ function buildCompleteMail() {
   return html;
 }
 
+function buildPciDssMail() {
+  const name = val('kontaktName') || '[KUNDENNAME]';
+  const firma = val('firmenname') || '[FIRMENNAME]';
+  const merchantName = val('merchantName') || '[ACCOUNT_NAME]';
+  const lang = val('sprache');
+
+  if (lang === 'en') {
+    let html = `<p>Dear ${name},</p>`;
+    html += `<p>As part of the Adyen onboarding, you will receive a link to the <strong>PCI DSS Self-Assessment Questionnaire A (SAQ A)</strong>. This document needs to be filled out and signed by you.</p>`;
+    html += `<p><strong>Don't worry – it looks more complex than it is.</strong> Here is a brief overview:</p>`;
+    html += `<h3>What is this document?</h3>`;
+    html += `<ul>`;
+    html += `<li>The SAQ A is <strong>not an additional contract</strong>, but a standardized self-assessment for PCI DSS compliance (Payment Card Industry Data Security Standard).</li>`;
+    html += `<li>Every company that accepts credit card payments must complete this – from small boutique hotels to large chains.</li>`;
+    html += `<li>Since you outsource all card data processing to Adyen, the questionnaire is largely pre-filled for you.</li>`;
+    html += `</ul>`;
+    html += `<h3>What you confirm by signing:</h3>`;
+    html += `<ol>`;
+    html += `<li><strong>Outsourcing of card data processing:</strong> All storage, processing and transmission of card data is handled entirely by Adyen – not on your own systems.</li>`;
+    html += `<li><strong>Payment page:</strong> Your checkout page delivers all sensitive elements (payment fields) directly from Adyen (e.g. via redirect or embedded iframe).</li>`;
+    html += `<li><strong>Basic security measures:</strong> No default passwords, individual user accounts, regular security updates, and a contact plan in case of security incidents.</li>`;
+    html += `</ol>`;
+    html += `<h3>What you need to do:</h3>`;
+    html += `<ol>`;
+    html += `<li>Open the DocuSign link you received.</li>`;
+    html += `<li>In <strong>"Adyen Company Account Name"</strong> enter: <code>${merchantName}</code></li>`;
+    html += `<li>Fill in the red-marked fields with your company details (company name, address, contact person, website URL).</li>`;
+    html += `<li>The security questions (Section 3, pages 2-3) are already pre-filled with "X" – please review them.</li>`;
+    html += `<li>At the end of the document (Part 3b), sign with your name and date.</li>`;
+    html += `</ol>`;
+    html += `<p><strong>Important:</strong> The document must be signed by someone authorized to sign off on security-related matters (e.g. Managing Director, CTO, or IT Manager).</p>`;
+    html += `<p>If you have any questions while filling out the form, please don't hesitate to contact me.</p>`;
+    html += `<p>Best regards</p>`;
+    return html;
+  }
+
+  let html = `<p>Sehr geehrte/r ${name},</p>`;
+  html += `<p>im Rahmen des Adyen-Onboardings erhalten Sie einen Link zum <strong>PCI DSS Self-Assessment Questionnaire A (SAQ A)</strong>. Dieses Dokument muss von Ihnen ausgefüllt und unterschrieben werden.</p>`;
+  html += `<p><strong>Keine Sorge – es sieht komplizierter aus als es ist.</strong> Hier eine kurze Übersicht:</p>`;
+
+  html += `<h3>Worum geht es bei dem Dokument?</h3>`;
+  html += `<ul>`;
+  html += `<li>Der SAQ A ist <strong>kein zusätzlicher Vertrag</strong>, sondern eine standardisierte Selbstauskunft zur PCI DSS Compliance (Payment Card Industry Data Security Standard).</li>`;
+  html += `<li>Jedes Unternehmen, das Kreditkartenzahlungen akzeptiert, muss diesen Fragebogen ausfüllen – vom kleinen Boutiquehotel bis zur großen Kette.</li>`;
+  html += `<li>Da Sie die gesamte Kartendatenverarbeitung an Adyen auslagern, ist der Fragebogen größtenteils bereits für Sie vorausgefüllt.</li>`;
+  html += `</ul>`;
+
+  html += `<h3>Was Sie mit Ihrer Unterschrift bestätigen:</h3>`;
+  html += `<ol>`;
+  html += `<li><strong>Auslagerung der Kartendatenverarbeitung:</strong> Speicherung, Verarbeitung und Übermittlung von Kartendaten erfolgt vollständig bei Adyen – nicht auf Ihren eigenen Systemen.</li>`;
+  html += `<li><strong>Zahlungsseite:</strong> Ihre Bezahlseite liefert alle sensiblen Elemente (Zahlungsfelder) direkt von Adyen (z.B. per Redirect oder eingebettetem iframe).</li>`;
+  html += `<li><strong>Basis-Sicherheitsmaßnahmen:</strong> Keine Standard-Passwörter, individuelle Benutzerkonten, regelmäßige Sicherheitsupdates und ein Notfallplan bei Sicherheitsvorfällen.</li>`;
+  html += `</ol>`;
+
+  html += `<h3>Was Sie konkret tun müssen:</h3>`;
+  html += `<ol>`;
+  html += `<li>Öffnen Sie den DocuSign-Link den Sie erhalten haben.</li>`;
+  html += `<li>Im Feld <strong>„Adyen Company Account Name"</strong> tragen Sie bitte ein: <code>${merchantName}</code></li>`;
+  html += `<li>Füllen Sie die rot markierten Felder mit Ihren Unternehmensdaten aus (Firmenname, Adresse, Ansprechpartner, Website-URL).</li>`;
+  html += `<li>Die Sicherheitsfragen (Section 3, Seite 2-3) sind bereits mit „X" vorausgefüllt – bitte prüfen Sie diese.</li>`;
+  html += `<li>Am Ende des Dokuments (Part 3b) unterschreiben Sie mit Name und Datum.</li>`;
+  html += `</ol>`;
+
+  html += `<p><strong>Wichtig:</strong> Das Dokument muss von einer Person unterschrieben werden, die zur Unterschrift in sicherheitsrelevanten Angelegenheiten berechtigt ist (z.B. Geschäftsführer, CTO oder IT-Verantwortlicher).</p>`;
+  html += `<p>Falls Sie beim Ausfüllen Fragen haben, melden Sie sich gerne bei mir.</p>`;
+  html += `<p>Beste Grüße</p>`;
+  return html;
+}
+
 function buildRocketChatMsg() {
   const firma = val('firmenname') || '[KUNDENNAME]';
   const merchantName = val('merchantName') || '[MERCHANT_ID]';
@@ -445,6 +514,7 @@ function renderOutput() {
     case 'initial':   html = buildInitialMail(); break;
     case 'reminder':  html = buildReminderMail(); break;
     case 'complete':  html = buildCompleteMail(); break;
+    case 'pcidss':     html = buildPciDssMail(); break;
     case 'rocketchat': html = buildRocketChatMsg(); break;
     default: html = buildInitialMail();
   }
@@ -471,6 +541,7 @@ copyBtn.addEventListener('click', async function () {
     case 'initial':   html = buildInitialMail(); break;
     case 'reminder':  html = buildReminderMail(); break;
     case 'complete':  html = buildCompleteMail(); break;
+    case 'pcidss':     html = buildPciDssMail(); break;
     case 'rocketchat': html = buildRocketChatMsg(); break;
     default: html = buildInitialMail();
   }
