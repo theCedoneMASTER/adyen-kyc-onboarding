@@ -1,14 +1,5 @@
 // -- THEME --
 const themeToggle = document.getElementById('themeToggle');
-// -- GLOBALE SIGNATUR (nicht pro Kunde) --
-const absenderInput = document.getElementById('absenderName');
-if (absenderInput) {
-  absenderInput.value = localStorage.getItem('adyenAbsender') || '';
-  absenderInput.addEventListener('input', () => {
-    localStorage.setItem('adyenAbsender', absenderInput.value);
-  });
-}
-
 if (localStorage.getItem('adyenTheme') === 'light') {
   document.body.classList.add('light');
   themeToggle.querySelector('.theme-icon').textContent = '\u2600\uFE0F';
@@ -427,12 +418,6 @@ function getMailType() {
   return document.querySelector('input[name="mailType"]:checked')?.value || 'initial';
 }
 
-function buildSignature(lang) {
-  const name = val('absenderName');
-  if (!name) return '';
-  return `<p>${name}</p>`;
-}
-
 // -- DOC LABELS --
 const docLabels = {
   handelsregister: 'Aktueller Handelsregisterauszug (alle Seiten)',
@@ -505,7 +490,6 @@ function buildInitialMail() {
     html += `<p>Once we have received all documents, we will take care of the complete setup. You will be notified as soon as everything is finalized.</p>`;
     html += `<p>Please don't hesitate to reach out if you have any questions.</p>`;
     html += `<p>Best regards</p>`;
-    html += buildSignature();
     return html;
   }
 
@@ -533,7 +517,6 @@ function buildInitialMail() {
   html += `<p>Sobald wir alle Unterlagen erhalten haben, kümmern wir uns um die komplette Einrichtung. Sie werden von uns informiert, sobald alles abgeschlossen ist.</p>`;
   html += `<p>Bei Fragen stehe ich Ihnen gerne zur Verfügung.</p>`;
   html += `<p>Beste Grüße</p>`;
-  html += buildSignature();
   return html;
 }
 
@@ -554,7 +537,6 @@ function buildReminderMail() {
     }
     html += `<p>Please send us the missing documents so we can finalize your setup.</p>`;
     html += `<p>Best regards</p>`;
-    html += buildSignature();
     return html;
   }
 
@@ -569,7 +551,6 @@ function buildReminderMail() {
   }
   html += `<p>Bitte senden Sie uns die fehlenden Unterlagen, damit wir die Einrichtung für Sie abschließen können.</p>`;
   html += `<p>Beste Grüße</p>`;
-  html += buildSignature();
   return html;
 }
 
@@ -583,7 +564,6 @@ function buildCompleteMail() {
     html += `<p>You will receive a separate email from Adyen shortly with your access credentials for the Adyen Essentials Portal, where you can view your payment overview.</p>`;
     html += `<p>Please don't hesitate to reach out if you have any questions.</p>`;
     html += `<p>Best regards</p>`;
-    html += buildSignature();
     return html;
   }
 
@@ -592,7 +572,6 @@ function buildCompleteMail() {
   html += `<p>Sie erhalten in Kürze eine separate E-Mail von Adyen mit Ihren Zugangsdaten für das Adyen Essentials Portal. Dort können Sie Ihre Zahlungsübersicht einsehen.</p>`;
   html += `<p>Bei Fragen stehe ich Ihnen gerne zur Verfügung.</p>`;
   html += `<p>Beste Grüße</p>`;
-  html += buildSignature();
   return html;
 }
 
@@ -671,7 +650,6 @@ function buildPciDssMail() {
 
     html += `<p>If you have any questions while filling out the form, please don't hesitate to contact me.</p>`;
     html += `<p>Best regards</p>`;
-    html += buildSignature();
     return html;
   }
 
@@ -743,7 +721,6 @@ function buildPciDssMail() {
 
   html += `<p>Falls Sie beim Ausfüllen Fragen haben, melden Sie sich gerne bei mir.</p>`;
   html += `<p>Beste Grüße</p>`;
-  html += buildSignature();
   return html;
 }
 
