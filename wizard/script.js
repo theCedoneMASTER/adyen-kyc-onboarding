@@ -1,5 +1,14 @@
 // -- THEME --
 const themeToggle = document.getElementById('themeToggle');
+// -- GLOBALE SIGNATUR (nicht pro Kunde) --
+const absenderInput = document.getElementById('absenderName');
+if (absenderInput) {
+  absenderInput.value = localStorage.getItem('adyenAbsender') || '';
+  absenderInput.addEventListener('input', () => {
+    localStorage.setItem('adyenAbsender', absenderInput.value);
+  });
+}
+
 if (localStorage.getItem('adyenTheme') === 'light') {
   document.body.classList.add('light');
   themeToggle.querySelector('.theme-icon').textContent = '\u2600\uFE0F';
@@ -80,7 +89,7 @@ function getClientDisplayName(data) {
 function collectFormData() {
   const data = {};
   document.querySelectorAll('.form-group input, .form-group select, .form-group textarea').forEach(el => {
-    if (el.id) data[el.id] = el.value;
+    if (el.id && el.id !== 'absenderName') data[el.id] = el.value;
   });
   document.querySelectorAll('.doc-check').forEach(el => {
     data['doc_' + el.dataset.doc] = el.checked;
@@ -118,8 +127,34 @@ function applyFormData(data) {
 
 function getClientStatusCount(data) {
   const statusKeys = ['status_mail_gesendet','status_docs_geprueft','status_merchant_angelegt','status_pci_docusign','status_merchant_request','status_adyen_freigabe','status_terminal_zugewiesen','status_backend_config','status_dev_benachrichtigt','status_user_erstellt'];
-  const checked = statusKeys.filter(k => data[k] === true).length;
-  return { checked, total: 10 };
+  // Bei Ecommerce-Only: Terminal-Schritt zählt nicht
+  const isEcomOnly = data.paymentType === 'ecommerce';
+  const relevant = isEcomOnly ? statusKeys.filter(k => k !== 'status_terminal_zugewiesen') : statusKeys;
+  const checked = relevant.filter(k => data[k] === true).length;
+  return { checked, total: relevant.length };
+}
+
+function autoTerminalForEcommerce() {
+  const paymentType = val('paymentType');
+  const terminalCheck = document.querySelector('.status-check[data-status="terminal_zugewiesen"]');
+  const terminalLabel = terminalCheck?.closest('label');
+  if (paymentType === 'ecommerce') {
+    if (terminalCheck && !terminalCheck.checked) {
+      terminalCheck.checked = true;
+    }
+    if (terminalLabel) {
+      terminalLabel.style.opacity = '0.4';
+      terminalLabel.style.pointerEvents = 'none';
+      terminalLabel.querySelector('.label-hint').textContent = 'Entfällt bei Nur-Online';
+    }
+  } else {
+    if (terminalLabel) {
+      terminalLabel.style.opacity = '';
+      terminalLabel.style.pointerEvents = '';
+      terminalLabel.querySelector('.label-hint').textContent = 'Nur bei POS – In-person payments konfiguriert';
+    }
+  }
+  updateStatusCount();
 }
 
 function saveCurrentClient() {
@@ -136,6 +171,7 @@ function switchToClient(id) {
   applyFormData(data);
   updateDocCounts();
   updateStatusCount();
+  autoTerminalForEcommerce();
   updateStepDone();
   checkDocDates();
   renderOutput();
@@ -776,6 +812,21 @@ copyBtn.addEventListener('click', async function () {
     ]);
     this.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Kopiert!`;
     this.classList.add('copied');
+    // Auto-Status setzen
+    const mailType = getMailType();
+    if (mailType === 'initial') {
+      const el = document.querySelector('.status-check[data-status="mail_gesendet"]');
+      if (el && !el.checked) { el.checked = true; updateStatusCount(); saveCurrentClient(); }
+    } else if (mailType === 'rocketchat') {
+      const el = document.querySelector('.status-check[data-status="dev_benachrichtigt"]');
+      if (el && !el.checked) { el.checked = true; updateStatusCount(); saveCurrentClient(); }
+    } else if (mailType === 'pcidss') {
+      const el = document.querySelector('.status-check[data-status="pci_docusign"]');
+      if (el && !el.checked) { el.checked = true; updateStatusCount(); saveCurrentClient(); }
+    } else if (mailType === 'complete') {
+      const el = document.querySelector('.status-check[data-status="user_erstellt"]');
+      if (el && !el.checked) { el.checked = true; updateStatusCount(); saveCurrentClient(); checkCompletion(); }
+    }
     setTimeout(() => {
       this.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Kopieren`;
       this.classList.remove('copied');
@@ -791,11 +842,33 @@ copyBtn.addEventListener('click', async function () {
 // -- EVENT LISTENERS --
 document.querySelectorAll('.form-group input, .form-group select, .form-group textarea').forEach(el => {
   el.addEventListener('input', () => { saveCurrentClient(); renderOutput(); updateStepDone(); });
-  el.addEventListener('change', () => { saveCurrentClient(); renderOutput(); updateStepDone(); });
+  el.addEventListener('change', () => {
+    saveCurrentClient(); renderOutput(); updateStepDone();
+    if (el.id === 'paymentType') autoTerminalForEcommerce();
+  });
 });
 
 document.querySelectorAll('.doc-check').forEach(cb => {
-  cb.addEventListener('change', () => { updateDocCounts(); saveCurrentClient(); renderOutput(); updateStepDone(); });
+  cb.addEventListener('change', () => {
+    // Auto-Datum setzen wenn abgehakt
+    const docId = cb.dataset.doc;
+    const dateField = document.getElementById('docDate_' + docId);
+    if (dateField && cb.checked && !dateField.value) {
+      dateField.value = new Date().toISOString().slice(0, 10);
+    }
+    if (dateField && !cb.checked) {
+      dateField.value = '';
+    }
+    // Auto-Status: "Dokumente geprüft" wenn alle 7 da
+    const allDocsChecked = [...document.querySelectorAll('.doc-check')].every(c => c.checked);
+    const docsStatus = document.querySelector('.status-check[data-status="docs_geprueft"]');
+    if (docsStatus && allDocsChecked && !docsStatus.checked) {
+      docsStatus.checked = true;
+      updateStatusCount();
+      checkCompletion();
+    }
+    updateDocCounts(); saveCurrentClient(); renderOutput(); updateStepDone(); checkDocDates();
+  });
 });
 
 document.querySelectorAll('.status-check').forEach(cb => {
@@ -886,6 +959,7 @@ if (savedActiveId && clients[savedActiveId]) {
 
 updateDocCounts();
 updateStatusCount();
+autoTerminalForEcommerce();
 updateStepDone();
 checkDocDates();
 checkBackupReminder();
