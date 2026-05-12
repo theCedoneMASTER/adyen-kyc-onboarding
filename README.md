@@ -29,6 +29,8 @@ Daten werden im Browser gespeichert (LocalStorage).
 | `05_FAQ_Kunden.md` | 25+ Antworten auf typische Kundenfragen |
 | `06_Beispieldokumente_Guide.md` | Wie Dokumente aussehen müssen |
 | `07_Laenderunterschiede.md` | DE vs. AT/CH/NL/FR/IT/ES/UK/PL |
+| `08_Wizard_Anleitung.md` | Wizard-Bedienung |
+| `09_Adyen_Backend_Walkthrough.md` | Adyen-Prozess aus Kunden-POV (Referenz) |
 
 ## Nutzung
 

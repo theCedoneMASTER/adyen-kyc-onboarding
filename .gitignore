@@ -1,5 +1,7 @@
 .DS_Store
 *.pdf
+*.mov
+*.mp4
 01_*.md
 02_*.md
 03_*.md

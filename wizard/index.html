@@ -34,11 +34,49 @@
       <span class="status-dot"></span>
       <span id="progressText">Schritt 1/3</span>
     </div>
+    <input type="text" id="absenderName" placeholder="Dein Name (für Audit-Log)" title="Wird in Status-Änderungen mitgeloggt" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font-size:12px;width:160px">
+    <button id="helpBtn" title="Hilfe" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:8px;width:32px;height:32px;cursor:pointer">?</button>
     <button id="themeToggle" title="Theme wechseln">
       <span class="theme-icon">&#127769;</span>
     </button>
   </div>
 </header>
+
+<!-- DSGVO BANNER -->
+<div id="dsgvoBanner" style="display:none;background:rgba(245,158,11,0.15);border-bottom:1px solid rgba(245,158,11,0.5);padding:8px 16px;font-size:12px;color:var(--text);display:flex;justify-content:space-between;align-items:center;gap:12px">
+  <span>⚠ <strong>DSGVO-Hinweis:</strong> LocalStorage ist unverschlüsselt. Keine Ausweisbilder oder Volltext-Privatdaten hier ablegen – nur Tracking-Status + Notizen. Backups (Export) regelmäßig erstellen und sicher ablegen.</span>
+  <button id="dsgvoDismiss" style="background:transparent;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:11px">Verstanden</button>
+</div>
+
+<!-- HELP MODAL -->
+<div id="helpModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;justify-content:center;align-items:center;padding:20px">
+  <div style="background:var(--bg1);border:1px solid var(--border);border-radius:12px;max-width:720px;max-height:80vh;overflow-y:auto;padding:24px;color:var(--text)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0">Wizard-Hilfe</h2>
+      <button id="helpClose" style="background:transparent;border:none;color:var(--text);font-size:24px;cursor:pointer">×</button>
+    </div>
+    <h3>Workflow (Kurz)</h3>
+    <ol style="font-size:13px;line-height:1.6">
+      <li><strong>Step 1 – Daten:</strong> Firma, Kontakt, Bank, UBOs, Adyen-Setup + Pipedrive-Verknüpfung</li>
+      <li><strong>Step 2 – Dokumente:</strong> Eingangs-Checkboxen pro Dokument abhaken</li>
+      <li><strong>Step 3 – Status:</strong> 10 Schritte des Onboarding-Prozesses + Adyen-Backend-Status + Webhook-Konfig</li>
+      <li><strong>Step 4 – Mail:</strong> Vorlage auswählen, kopieren, an Kunde/Slack</li>
+    </ol>
+    <h3>Wichtig</h3>
+    <ul style="font-size:13px;line-height:1.6">
+      <li>PCI DSS SAQ-A signiert immer der <strong>Kunde selbst</strong> (DocuSign-Link)</li>
+      <li>Daten persistieren im Browser-LocalStorage – PC-Wechsel = Daten weg. Export nutzen!</li>
+      <li>Adyen-Status (Pending/Action Required/Active) im Backend tracken + im Wizard nachpflegen</li>
+      <li>Bei UBO immer Geburtsort + Nationalität erfragen – Pflicht bei Adyen</li>
+    </ul>
+    <h3>Doku-Verweise</h3>
+    <ul style="font-size:13px;line-height:1.6">
+      <li><code>01_Checkliste_Deutsche_Kunden.md</code> – komplette Doku-Liste</li>
+      <li><code>03_Interner_Leitfaden.md</code> – Schritt-für-Schritt</li>
+      <li><code>09_Adyen_Backend_Walkthrough.md</code> – Kunden-POV (Referenz)</li>
+    </ul>
+  </div>
+</div>
 
 <!-- LAYOUT -->
 <div class="layout">
@@ -159,6 +197,29 @@
         </div>
       </div>
 
+      <div class="category" style="--cat-color: 236,72,153">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div>
+            <h3>Wirtschaftlich Berechtigte (UBOs)</h3>
+            <span class="cat-sub">Personen mit &gt;25% Anteil – Adyen-Pflicht</span>
+          </div>
+        </div>
+        <div id="uboList"></div>
+        <button type="button" id="addUboBtn" style="margin:6px 14px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:12px">+ UBO hinzufügen</button>
+        <span style="font-size:11px;color:var(--text3);padding:4px 14px 0;display:block">Geburtsort + Nationalität sind Adyen-Pflichtfelder. Häufig vergessen!</span>
+        <div class="form-group">
+          <label class="form-label" for="vollmachtNoetig">Vollmacht erforderlich?</label>
+          <select id="vollmachtNoetig">
+            <option value="">– bitte wählen –</option>
+            <option value="nein">Nein (Unterzeichner steht im HR)</option>
+            <option value="ja">Ja (Vollmacht-PDF einholen!)</option>
+          </select>
+        </div>
+      </div>
+
       <div class="category" style="--cat-color: 34,197,94">
         <div class="category-header">
           <div class="cat-icon">
@@ -202,11 +263,38 @@
           </select>
         </div>
         <div class="form-group">
+          <label class="form-label" for="land">Land der juristischen Person</label>
+          <select id="land">
+            <option value="DE">Deutschland</option>
+            <option value="AT">Österreich</option>
+            <option value="CH">Schweiz</option>
+            <option value="NL">Niederlande</option>
+            <option value="FR">Frankreich</option>
+            <option value="IT">Italien</option>
+            <option value="ES">Spanien</option>
+            <option value="UK">Großbritannien</option>
+            <option value="PL">Polen</option>
+          </select>
+          <span id="landHint" style="font-size:11px;color:var(--text3);padding:4px 14px 0;display:block"></span>
+        </div>
+        <div class="form-group">
           <label class="form-label" for="sprache">Kundensprache</label>
           <select id="sprache">
             <option value="de">Deutsch</option>
             <option value="en">English</option>
           </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="pipedriveLink">Pipedrive Deal-Link</label>
+          <input type="url" id="pipedriveLink" placeholder="https://app.pipedrive.com/deal/...">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="adyenDocLink">Adyen Document Link (aus PMS)</label>
+          <input type="url" id="adyenDocLink" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="adyenCompanyId">Adyen Company ID</label>
+          <input type="text" id="adyenCompanyId" placeholder="vom System vergeben">
         </div>
       </div>
     </div>
@@ -425,6 +513,86 @@
           <div class="label-content">
             <span>10. Kundenzugang erstellt</span>
             <span class="label-hint">Adyen Essentials Zugang + Abschlussmail</span>
+          </div>
+        </label>
+      </div>
+
+      <!-- ADYEN BACKEND STATUS -->
+      <div class="category" style="--cat-color: 168,85,247">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          </div>
+          <div>
+            <h3>Adyen-Backend-Status</h3>
+            <span class="cat-sub">Compliance-Prüfung im Adyen-Portal</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="adyenStatus">Status</label>
+          <select id="adyenStatus">
+            <option value="">– noch nicht eingereicht –</option>
+            <option value="draft">Draft</option>
+            <option value="pending">Pending (Prüfung 3-5 Werktage)</option>
+            <option value="action_required">Action Required (Adyen will mehr Docs)</option>
+            <option value="active">Active (live)</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="adyenStatusDate">Letzter Status-Check (Datum)</label>
+          <input type="date" id="adyenStatusDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="adyenStatusNotiz">Notiz (z.B. fehlende Docs)</label>
+          <input type="text" id="adyenStatusNotiz" placeholder="Was hat Adyen angefordert?">
+        </div>
+      </div>
+
+      <!-- WEBHOOK-KONFIG SUB-CHECKLIST -->
+      <div class="category" style="--cat-color: 59,130,246">
+        <div class="category-header">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21l4-4 4 4M3 12h18M12 3v18"/></svg>
+          </div>
+          <div>
+            <h3>Backend-Konfiguration (Detail)</h3>
+            <span class="cat-sub">Sub-Checkliste zu Schritt 8</span>
+          </div>
+        </div>
+        <label>
+          <input type="checkbox" class="status-check" data-status="pbl_name_on_card">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>Pay by Link: "Name on card" aktiviert</span>
+          </div>
+        </label>
+        <label>
+          <input type="checkbox" class="status-check" data-status="pbl_recurring">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>Pay by Link: "Recurring through customer area" aktiviert</span>
+          </div>
+        </label>
+        <label>
+          <input type="checkbox" class="status-check" data-status="webhook_payment">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>Webhook Payment: <code>/pos-orders/complete-payment</code> (alle Events außer refund*)</span>
+          </div>
+        </label>
+        <label>
+          <input type="checkbox" class="status-check" data-status="webhook_refund">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>Webhook Refund: <code>/pos-orders/complete-refund</code> (nur refund*)</span>
+          </div>
+        </label>
+        <label>
+          <input type="checkbox" class="status-check" data-status="additional_data">
+          <div class="check-wrap"><div class="check-box"></div></div>
+          <div class="label-content">
+            <span>Additional Data: Payment + Cards + Acquirer konfiguriert</span>
           </div>
         </label>
       </div>

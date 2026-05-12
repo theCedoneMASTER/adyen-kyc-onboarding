@@ -1,3 +1,44 @@
+// -- VERSION --
+const MAIL_VERSION = '2026-05';
+const APP_VERSION = '1.1.0';
+
+// -- HELP MODAL --
+document.getElementById('helpBtn')?.addEventListener('click', () => {
+  const m = document.getElementById('helpModal');
+  if (m) m.style.display = 'flex';
+});
+document.getElementById('helpClose')?.addEventListener('click', () => {
+  const m = document.getElementById('helpModal');
+  if (m) m.style.display = 'none';
+});
+document.getElementById('helpModal')?.addEventListener('click', (e) => {
+  if (e.target.id === 'helpModal') e.target.style.display = 'none';
+});
+
+// -- DSGVO BANNER --
+(function() {
+  const seen = localStorage.getItem('adyenDsgvoSeen');
+  const banner = document.getElementById('dsgvoBanner');
+  if (banner && !seen) banner.style.display = 'flex';
+  document.getElementById('dsgvoDismiss')?.addEventListener('click', () => {
+    localStorage.setItem('adyenDsgvoSeen', '1');
+    if (banner) banner.style.display = 'none';
+  });
+})();
+
+// -- ABSENDER (Support-User) PERSISTENCE --
+const absenderEl = document.getElementById('absenderName');
+if (absenderEl) {
+  absenderEl.value = localStorage.getItem('adyenAbsenderName') || '';
+  absenderEl.addEventListener('input', () => {
+    localStorage.setItem('adyenAbsenderName', absenderEl.value);
+  });
+}
+
+function getCurrentUser() {
+  return localStorage.getItem('adyenAbsenderName') || 'unknown';
+}
+
 // -- THEME --
 const themeToggle = document.getElementById('themeToggle');
 if (localStorage.getItem('adyenTheme') === 'light') {
@@ -76,6 +117,123 @@ function getClientDisplayName(data) {
   return data.firmenname || data.kontaktName || 'Neuer Kunde';
 }
 
+// -- UBO LIST (dynamic) --
+let uboState = [];
+
+function renderUboList() {
+  const container = document.getElementById('uboList');
+  if (!container) return;
+  container.innerHTML = '';
+  uboState.forEach((ubo, idx) => {
+    const block = document.createElement('div');
+    block.className = 'ubo-block';
+    block.style.cssText = 'border:1px solid var(--border);border-radius:8px;padding:10px;margin:6px 14px';
+    block.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong style="font-size:12px;color:var(--text2)">UBO ${idx + 1}</strong>
+        <button type="button" class="ubo-remove" data-idx="${idx}" style="background:transparent;border:1px solid var(--border);color:var(--warn);border-radius:6px;padding:2px 8px;cursor:pointer;font-size:11px">Entfernen</button>
+      </div>
+      <div class="form-group"><label class="form-label">Vollständiger Name</label><input type="text" data-ubo="name" data-idx="${idx}" value="${escapeHtml(ubo.name || '')}" placeholder="laut Ausweis"></div>
+      <div class="form-group"><label class="form-label">Geburtsdatum</label><input type="date" data-ubo="geburtsdatum" data-idx="${idx}" value="${ubo.geburtsdatum || ''}"></div>
+      <div class="form-group"><label class="form-label">Geburtsort</label><input type="text" data-ubo="geburtsort" data-idx="${idx}" value="${escapeHtml(ubo.geburtsort || '')}" placeholder="Stadt, Land"></div>
+      <div class="form-group"><label class="form-label">Nationalität</label><input type="text" data-ubo="nationalitaet" data-idx="${idx}" value="${escapeHtml(ubo.nationalitaet || '')}" placeholder="z.B. deutsch"></div>
+      <div class="form-group"><label class="form-label">Private Wohnanschrift</label><input type="text" data-ubo="adresse" data-idx="${idx}" value="${escapeHtml(ubo.adresse || '')}"></div>
+      <div class="form-group"><label class="form-label">Anteil (%)</label><input type="number" min="0" max="100" step="0.1" data-ubo="anteil" data-idx="${idx}" value="${ubo.anteil || ''}"></div>
+    `;
+    container.appendChild(block);
+  });
+
+  container.querySelectorAll('input[data-ubo]').forEach(el => {
+    el.addEventListener('input', () => {
+      const idx = parseInt(el.dataset.idx);
+      const field = el.dataset.ubo;
+      uboState[idx][field] = el.value;
+      saveCurrentClient();
+    });
+  });
+  container.querySelectorAll('.ubo-remove').forEach(el => {
+    el.addEventListener('click', () => {
+      uboState.splice(parseInt(el.dataset.idx), 1);
+      renderUboList();
+      saveCurrentClient();
+    });
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+document.getElementById('addUboBtn')?.addEventListener('click', () => {
+  uboState.push({ name: '', geburtsdatum: '', geburtsort: '', nationalitaet: '', adresse: '', anteil: '' });
+  renderUboList();
+  saveCurrentClient();
+});
+
+// -- VALIDATION --
+function validateIban(v) {
+  if (!v) return true;
+  const clean = v.replace(/\s/g, '').toUpperCase();
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(clean)) return false;
+  // Mod-97
+  const rearranged = clean.slice(4) + clean.slice(0, 4);
+  const numeric = rearranged.replace(/[A-Z]/g, c => c.charCodeAt(0) - 55);
+  let remainder = 0;
+  for (let i = 0; i < numeric.length; i++) {
+    remainder = (remainder * 10 + parseInt(numeric[i])) % 97;
+  }
+  return remainder === 1;
+}
+
+function validatePhone(v) {
+  if (!v) return true;
+  return /^[+\d][\d\s\-()/.]{5,30}$/.test(v);
+}
+
+function applyValidation() {
+  const iban = document.getElementById('iban');
+  if (iban) {
+    const ok = validateIban(iban.value);
+    iban.style.borderColor = !iban.value ? '' : (ok ? 'var(--good, #0abf53)' : 'var(--warn)');
+    iban.title = !iban.value ? '' : (ok ? 'IBAN valide' : 'IBAN ungültig (Format/Prüfziffer)');
+  }
+  const tel = document.getElementById('kontaktTel');
+  if (tel) {
+    const ok = validatePhone(tel.value);
+    tel.style.borderColor = !tel.value ? '' : (ok ? 'var(--good, #0abf53)' : 'var(--warn)');
+  }
+}
+
+// -- AUDIT TRAIL --
+function recordAudit(key) {
+  if (!activeClientId) return;
+  const clients = getAllClients();
+  if (!clients[activeClientId]) return;
+  clients[activeClientId]._audit = clients[activeClientId]._audit || {};
+  clients[activeClientId]._audit[key] = { by: getCurrentUser(), at: Date.now() };
+  saveAllClients(clients);
+}
+
+// -- LÄNDER-HINT --
+const landHints = {
+  DE: 'Standard-Workflow. Handelsregister via handelsregister.de.',
+  AT: 'Firmenbuch (FBN) statt Handelsregister. Gewerbeschein = WKO-Auszug.',
+  CH: 'Zefix-Auszug. UID-Nummer Pflicht. CHF möglich.',
+  NL: 'KvK-Uittreksel. BTW-nummer.',
+  FR: 'Kbis-Auszug, SIREN/SIRET, TVA-Nummer.',
+  IT: 'Visura Camerale, Partita IVA, Codice Fiscale.',
+  ES: 'Registro Mercantil-Auszug, CIF/NIF.',
+  UK: 'Companies House extract, VAT number, IBAN GB...',
+  PL: 'KRS-Auszug, NIP, REGON.'
+};
+
+function updateLandHint() {
+  const land = document.getElementById('land')?.value || 'DE';
+  const hint = document.getElementById('landHint');
+  if (hint) hint.textContent = landHints[land] || '';
+}
+document.getElementById('land')?.addEventListener('change', updateLandHint);
+
 // -- Formular ↔ Daten --
 function collectFormData() {
   const data = {};
@@ -88,6 +246,7 @@ function collectFormData() {
   document.querySelectorAll('.status-check').forEach(el => {
     data['status_' + el.dataset.status] = el.checked;
   });
+  data.ubos = uboState;
   return data;
 }
 
@@ -99,8 +258,12 @@ function applyFormData(data) {
   document.querySelectorAll('.doc-check').forEach(el => { el.checked = false; });
   document.querySelectorAll('.status-check').forEach(el => { el.checked = false; });
 
+  uboState = Array.isArray(data.ubos) ? data.ubos : [];
+  renderUboList();
+
   // Daten einfüllen
   Object.entries(data).forEach(([key, value]) => {
+    if (key === 'ubos') return;
     if (key.startsWith('doc_')) {
       const docId = key.replace('doc_', '');
       const el = document.querySelector(`.doc-check[data-doc="${docId}"]`);
@@ -114,6 +277,9 @@ function applyFormData(data) {
       if (el) el.value = value;
     }
   });
+
+  updateLandHint();
+  applyValidation();
 }
 
 function getClientStatusCount(data) {
@@ -475,7 +641,7 @@ function buildInitialMail() {
     html += `<p><strong>2. ID copy of the managing director:</strong></p><ul>`;
     html += `<li>Passport OR national ID card (front and back)</li></ul>`;
     html += `<p><strong>3. Ultimate Beneficial Owners (persons with more than 25% company shares):</strong></p><ul>`;
-    html += `<li>Name, date of birth, and ownership percentage</li>`;
+    html += `<li>Full name (as on ID), date of birth, <strong>place of birth</strong>, <strong>nationality</strong>, private residential address, and ownership percentage</li>`;
     html += `<li>ID copy (passport or national ID card, both sides)</li>`;
     html += `<li>Proof of address (e.g. utility bill or tax assessment, no older than 3 months)</li></ul>`;
     html += `<p><strong>4. Bank details for payouts:</strong></p><ul>`;
@@ -484,9 +650,9 @@ function buildInitialMail() {
     html += `<li>Please use an official bank statement, not a screenshot from a banking app</li>`;
     html += `<li>The statement must not be older than 12 months</li></ul>`;
     html += `<p><strong>Document requirements:</strong></p><ul>`;
-    html += `<li>Photos/scans as <strong>JPEG or PNG</strong></li>`;
+    html += `<li>Photos/scans as <strong>JPEG, PNG or PDF</strong></li>`;
     html += `<li>File size between <strong>100 KB and 4 MB</strong></li>`;
-    html += `<li>Documents must be <strong>legible</strong> and <strong>complete</strong></li></ul>`;
+    html += `<li>Documents must be <strong>legible</strong> and <strong>complete</strong> (all pages)</li></ul>`;
     html += `<p>Once we have received all documents, we will take care of the complete setup. You will be notified as soon as everything is finalized.</p>`;
     html += `<p>Please don't hesitate to reach out if you have any questions.</p>`;
     html += `<p>Best regards</p>`;
@@ -502,7 +668,7 @@ function buildInitialMail() {
   html += `<p><strong>2. Ausweiskopie des Geschäftsführers:</strong></p><ul>`;
   html += `<li>Reisepass ODER Personalausweis (Vorder- und Rückseite)</li></ul>`;
   html += `<p><strong>3. Wirtschaftlich Berechtigte (Personen mit mehr als 25% Firmenanteil):</strong></p><ul>`;
-  html += `<li>Name, Geburtsdatum und Anteil in Prozent</li>`;
+  html += `<li>Vollständiger Name (laut Ausweis), Geburtsdatum, <strong>Geburtsort</strong>, <strong>Nationalität</strong>, private Wohnanschrift und Anteil in Prozent</li>`;
   html += `<li>Ausweiskopie (Reisepass oder Personalausweis, beidseitig)</li>`;
   html += `<li>Adressnachweis (z.B. Nebenkostenabrechnung oder Steuerbescheid, nicht älter als 3 Monate)</li></ul>`;
   html += `<p><strong>4. Bankverbindung für Auszahlungen:</strong></p><ul>`;
@@ -511,9 +677,9 @@ function buildInitialMail() {
   html += `<li>Bitte einen offiziellen Kontoauszug verwenden, kein Screenshot aus einer Banking-App</li>`;
   html += `<li>Der Auszug darf nicht älter als 12 Monate sein</li></ul>`;
   html += `<p><strong>Hinweise zu den Dokumenten:</strong></p><ul>`;
-  html += `<li>Fotos/Scans bitte als <strong>JPEG oder PNG</strong> senden</li>`;
+  html += `<li>Fotos/Scans bitte als <strong>JPEG, PNG oder PDF</strong> senden</li>`;
   html += `<li>Dateien müssen zwischen <strong>100 KB und 4 MB</strong> groß sein</li>`;
-  html += `<li>Dokumente müssen <strong>gut lesbar</strong> und <strong>vollständig</strong> sein</li></ul>`;
+  html += `<li>Dokumente müssen <strong>gut lesbar</strong> und <strong>vollständig</strong> sein (alle Seiten)</li></ul>`;
   html += `<p>Sobald wir alle Unterlagen erhalten haben, kümmern wir uns um die komplette Einrichtung. Sie werden von uns informiert, sobald alles abgeschlossen ist.</p>`;
   html += `<p>Bei Fragen stehe ich Ihnen gerne zur Verfügung.</p>`;
   html += `<p>Beste Grüße</p>`;
@@ -745,15 +911,22 @@ function buildRocketChatMsg() {
 }
 
 // -- ZENTRALE MAIL-FUNKTION --
+function withVersionFooter(html, type) {
+  if (type === 'rocketchat') return html;
+  return html + `<p style="margin-top:24px;font-size:10px;color:#999">Template-Version: ${MAIL_VERSION}</p>`;
+}
+
 function getMailHtml(mailType) {
+  let html;
   switch (mailType) {
-    case 'initial':    return buildInitialMail();
-    case 'reminder':   return buildReminderMail();
-    case 'complete':   return buildCompleteMail();
-    case 'pcidss':     return buildPciDssMail();
-    case 'rocketchat': return buildRocketChatMsg();
-    default:           return buildInitialMail();
+    case 'initial':    html = buildInitialMail(); break;
+    case 'reminder':   html = buildReminderMail(); break;
+    case 'complete':   html = buildCompleteMail(); break;
+    case 'pcidss':     html = buildPciDssMail(); break;
+    case 'rocketchat': html = buildRocketChatMsg(); break;
+    default:           html = buildInitialMail();
   }
+  return withVersionFooter(html, mailType);
 }
 
 // -- RENDER OUTPUT --
@@ -818,10 +991,11 @@ copyBtn.addEventListener('click', async function () {
 
 // -- EVENT LISTENERS --
 document.querySelectorAll('.form-group input, .form-group select, .form-group textarea').forEach(el => {
-  el.addEventListener('input', () => { saveCurrentClient(); renderOutput(); updateStepDone(); });
+  el.addEventListener('input', () => { saveCurrentClient(); renderOutput(); updateStepDone(); applyValidation(); });
   el.addEventListener('change', () => {
-    saveCurrentClient(); renderOutput(); updateStepDone();
+    saveCurrentClient(); renderOutput(); updateStepDone(); applyValidation();
     if (el.id === 'paymentType') autoTerminalForEcommerce();
+    if (el.id === 'land') updateLandHint();
   });
 });
 
@@ -850,6 +1024,7 @@ document.querySelectorAll('.doc-check').forEach(cb => {
 
 document.querySelectorAll('.status-check').forEach(cb => {
   cb.addEventListener('change', () => {
+    recordAudit('status_' + cb.dataset.status + ':' + (cb.checked ? 'on' : 'off'));
     updateStatusCount();
     saveCurrentClient();
     checkCompletion();
@@ -868,10 +1043,10 @@ document.querySelectorAll('.mail-radio').forEach(r => {
 });
 
 function updateStatusCount() {
-  const checks = document.querySelectorAll('.status-check');
-  const checked = [...checks].filter(c => c.checked).length;
+  const mainKeys = ['mail_gesendet','docs_geprueft','merchant_angelegt','pci_docusign','merchant_request','adyen_freigabe','terminal_zugewiesen','backend_config','dev_benachrichtigt','user_erstellt'];
+  const mainChecked = mainKeys.filter(k => document.querySelector(`.status-check[data-status="${k}"]`)?.checked).length;
   const el = document.getElementById('count-status');
-  if (el) el.textContent = `${checked}/${checks.length}`;
+  if (el) el.textContent = `${mainChecked}/${mainKeys.length}`;
 }
 
 function checkCompletion() {
@@ -958,9 +1133,9 @@ function updateStepDone() {
   btns[1]?.classList.toggle('done', docChecked === 7 && currentStep !== 2);
   btns[1]?.classList.toggle('active', currentStep === 2);
 
-  // Step 3: Mindestens 1 Status-Schritt erledigt
-  const statusChecked = [...document.querySelectorAll('.status-check')].filter(c => c.checked).length;
-  btns[2]?.classList.toggle('done', statusChecked === 10 && currentStep !== 3);
+  // Step 3: 10 Haupt-Status-Schritte erledigt (Sub-Checks zählen separat)
+  const sCount = getClientStatusCount(collectFormData());
+  btns[2]?.classList.toggle('done', sCount.checked === sCount.total && currentStep !== 3);
   btns[2]?.classList.toggle('active', currentStep === 3);
 
   // Step 4: immer neutral (Mail ist kein abschließbarer Step)
@@ -1062,15 +1237,66 @@ function showBackupHint(msg) {
 // ============================================================
 // EXPORT / IMPORT
 // ============================================================
-document.getElementById('exportBtn')?.addEventListener('click', () => {
+// -- ENCRYPTION HELPERS (AES-GCM via SubtleCrypto) --
+async function deriveKey(passphrase, salt) {
+  const enc = new TextEncoder();
+  const baseKey = await crypto.subtle.importKey('raw', enc.encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' },
+    baseKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+  );
+}
+
+async function encryptPayload(plaintext, passphrase) {
+  const enc = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(passphrase, salt);
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(plaintext));
+  return {
+    _format: 'adyen-kyc-encrypted-v1',
+    salt: btoa(String.fromCharCode(...salt)),
+    iv: btoa(String.fromCharCode(...iv)),
+    data: btoa(String.fromCharCode(...new Uint8Array(ct)))
+  };
+}
+
+async function decryptPayload(payload, passphrase) {
+  const dec = new TextDecoder();
+  const salt = Uint8Array.from(atob(payload.salt), c => c.charCodeAt(0));
+  const iv = Uint8Array.from(atob(payload.iv), c => c.charCodeAt(0));
+  const ct = Uint8Array.from(atob(payload.data), c => c.charCodeAt(0));
+  const key = await deriveKey(passphrase, salt);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+  return dec.decode(pt);
+}
+
+document.getElementById('exportBtn')?.addEventListener('click', async () => {
   const clients = getAllClients();
   const json = JSON.stringify(clients, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
+  const passphrase = prompt('Passphrase für verschlüsselten Export (leer = unverschlüsselt – nicht empfohlen):');
+  let blob, filename;
+  const date = new Date().toISOString().slice(0, 10);
+
+  if (passphrase) {
+    try {
+      const enc = await encryptPayload(json, passphrase);
+      blob = new Blob([JSON.stringify(enc, null, 2)], { type: 'application/json' });
+      filename = `adyen-kunden-backup_${date}.enc.json`;
+    } catch (e) {
+      alert('Verschlüsselung fehlgeschlagen: ' + e.message);
+      return;
+    }
+  } else {
+    if (!confirm('Export OHNE Verschlüsselung enthält Klartext-Kundendaten. Wirklich fortfahren?')) return;
+    blob = new Blob([json], { type: 'application/json' });
+    filename = `adyen-kunden-backup_${date}.json`;
+  }
+
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const date = new Date().toISOString().slice(0, 10);
   a.href = url;
-  a.download = `adyen-kunden-backup_${date}.json`;
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
   localStorage.setItem('adyenLastExport', Date.now().toString());
@@ -1085,12 +1311,19 @@ document.getElementById('importFile')?.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = (ev) => {
+  reader.onload = async (ev) => {
     try {
-      const imported = JSON.parse(ev.target.result);
+      let parsed = JSON.parse(ev.target.result);
+      // Verschlüsseltes Format?
+      if (parsed && parsed._format === 'adyen-kyc-encrypted-v1') {
+        const passphrase = prompt('Passphrase für Import:');
+        if (!passphrase) return;
+        const decrypted = await decryptPayload(parsed, passphrase);
+        parsed = JSON.parse(decrypted);
+      }
       const existing = getAllClients();
       let count = 0;
-      Object.entries(imported).forEach(([id, data]) => {
+      Object.entries(parsed).forEach(([id, data]) => {
         if (!existing[id]) {
           existing[id] = data;
           count++;
@@ -1098,9 +1331,9 @@ document.getElementById('importFile')?.addEventListener('change', (e) => {
       });
       saveAllClients(existing);
       renderClientSelector();
-      alert(`${count} neue Kunden importiert. ${Object.keys(imported).length - count} bereits vorhanden.`);
-    } catch {
-      alert('Fehler: Ungültige JSON-Datei.');
+      alert(`${count} neue Kunden importiert. ${Object.keys(parsed).length - count} bereits vorhanden.`);
+    } catch (err) {
+      alert('Fehler: ' + (err.message || 'Ungültige Datei / falsche Passphrase.'));
     }
   };
   reader.readAsText(file);
