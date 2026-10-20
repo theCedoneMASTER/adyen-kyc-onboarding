@@ -7,6 +7,8 @@ Browser-Tool zum Vereinfachen des Adyen KYC Onboarding-Prozesses für deutsche K
 Öffne den Wizard direkt im Browser:
 **[Adyen KYC Wizard](https://thecedonemASTER.github.io/adyen-kyc-onboarding/wizard/)**
 
+**[Adyen Ausfüllblatt](https://thecedonemASTER.github.io/adyen-kyc-onboarding/ausf%C3%BCllblatt/)**: persönliches Blatt pro Hotelkunde, das Feld für Feld durch DocuSign und das Adyen-Formular führt. Fristen als konkrete Daten, Mailtext zum Kopieren. Für den Weg, bei dem der Kunde selbst registriert.
+
 ## Was ist das?
 
 Statt Kunden durch den kompletten Adyen-Onboarding-Prozess zu schicken (was oft 2-3 Monate dauert oder abgebrochen wird), sammelt der Support die benötigten Dokumente ein und erledigt die Einrichtung selbst.
