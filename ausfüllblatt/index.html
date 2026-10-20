@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
 <title>Adyen Ausfüllblatt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: links Eingabe-Panel für den Support, rechts das Blatt, wie der Kunde es bekommt. Unter 900px untereinander. */
+/* Layout: Support-Ansicht = Eingabe links, Blatt rechts. Kundenansicht (?k=…) = nur das Blatt, mittig, mit Kopier-Knöpfen und Buttons zu DocuSign/Adyen. */
 :root {
   --bg: #eef2f0;
   --surface: #ffffff;
@@ -37,6 +38,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body {
   background: var(--bg); color: var(--ink);
   font-family: var(--font-body); font-size: 15px; line-height: 1.5;
@@ -47,6 +49,7 @@ body {
 h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
 .wrap { max-width: 1280px; margin: 0 auto; display: grid; gap: 28px; grid-template-columns: 360px minmax(0, 1fr); align-items: start; }
 @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+body.kunde .wrap { grid-template-columns: minmax(0, 880px); justify-content: center; }
 
 .head { max-width: 1280px; margin: 0 auto 24px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; }
 .head h1 { font-size: 1.9rem; }
@@ -61,23 +64,27 @@ label { display: grid; gap: 4px; font-size: 0.85rem; font-weight: 500; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .row-plz { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
 input::placeholder { color: var(--muted); opacity: 0.7; font-style: italic; }
-input, select {
+input, select, textarea {
   font: inherit; font-size: 0.92rem; color: var(--ink); background: var(--bg);
   border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; width: 100%; min-width: 0;
 }
-input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .check { display: flex; gap: 8px; align-items: center; font-weight: 400; }
 .check input { width: auto; }
 .hint { font-size: 0.78rem; color: var(--muted); font-weight: 400; }
-.sample { font-size: 0.8rem; background: var(--warn-soft); color: var(--warn); border-radius: 6px; padding: 8px 10px; }
+.hint.bad { color: var(--warn); }
+.sample { font-size: 0.8rem; background: var(--warn-soft); color: var(--warn); border-radius: 6px; padding: 8px 10px; margin: 0; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
-button {
-  font: inherit; font-weight: 600; font-size: 0.9rem; cursor: pointer;
+button, .btn {
+  font: inherit; font-weight: 600; font-size: 0.9rem; cursor: pointer; text-decoration: none;
   border-radius: 6px; padding: 9px 14px; border: 1px solid var(--accent);
-  background: var(--accent); color: var(--surface);
+  background: var(--accent); color: var(--surface); display: inline-block;
 }
-button.ghost { background: transparent; color: var(--accent); }
+button.ghost, .btn.ghost { background: transparent; color: var(--accent); }
+.btn.locked { background: var(--line); border-color: var(--line); color: var(--muted); }
 .toast { font-size: 0.85rem; color: var(--accent); min-height: 1.3em; }
+.linkbox { display: grid; gap: 8px; }
+.linkbox input { font-family: var(--font-mono); font-size: 0.78rem; }
 
 /* Das Blatt */
 .sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 36px clamp(18px, 4vw, 48px) 40px; min-width: 0; display: grid; gap: 30px; }
@@ -86,13 +93,18 @@ button.ghost { background: transparent; color: var(--accent); }
 .sheet-top h2 { font-size: 1.7rem; }
 .sheet-top .meta { color: var(--muted); font-size: 0.88rem; }
 .lead { margin: 0; max-width: 65ch; }
+.back { justify-self: start; }
 
 .prep { background: var(--warn-soft); border-radius: 8px; padding: 18px 20px; display: grid; gap: 10px; }
 .prep h3 { font-size: 1.1rem; color: var(--warn); }
 .prep p { margin: 0; }
 .prep ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-.prep li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start; }
+.prep li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; }
+.prep li input { width: 16px; height: 16px; margin: 3px 0 0; accent-color: var(--accent); cursor: pointer; }
+.prep li label { display: block; font-size: inherit; font-weight: 400; cursor: pointer; }
 .box { width: 14px; height: 14px; border: 1.5px solid var(--ink); border-radius: 2px; margin-top: 4px; }
+.progress { font-weight: 600; font-size: 0.88rem; color: var(--warn); }
+.progress.ok { color: var(--accent); }
 .date { font-family: var(--font-mono); font-weight: 500; white-space: nowrap; }
 
 .step { display: grid; gap: 14px; }
@@ -101,6 +113,11 @@ button.ghost { background: transparent; color: var(--accent); }
 .step-head h3 { font-size: 1.3rem; }
 .step-head .sub { color: var(--muted); font-size: 0.88rem; }
 .step > p { margin: 0; max-width: 65ch; }
+.go { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.gate { background: var(--warn-soft); color: var(--warn); border-radius: 6px; padding: 10px 12px; display: grid; gap: 8px; font-size: 0.88rem; }
+.gate p { margin: 0; }
+.step-done { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; }
+.step-done input { width: 16px; height: 16px; accent-color: var(--accent); }
 
 .section-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-top: 6px; }
 .tbl-wrap { overflow-x: auto; }
@@ -108,18 +125,26 @@ table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
 th, td { text-align: left; vertical-align: top; padding: 9px 10px; border-bottom: 1px solid var(--line); }
 th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
 td.f { font-weight: 600; white-space: nowrap; width: 28%; }
-td.v { font-family: var(--font-mono); font-size: 0.86rem; width: 34%; word-break: break-word; }
+td.v { font-family: var(--font-mono); font-size: 0.86rem; width: 36%; word-break: break-word; }
 td.v .open { font-family: var(--font-body); color: var(--muted); font-style: italic; }
+td.v .file { font-family: var(--font-body); }
 td.n { color: var(--muted); font-size: 0.84rem; }
+.val { display: flex; gap: 8px; align-items: start; justify-content: space-between; }
+.cp {
+  font-family: var(--font-body); font-size: 0.72rem; font-weight: 600; padding: 2px 8px; flex: none;
+  background: var(--accent-soft); color: var(--accent); border: 1px solid transparent; border-radius: 4px;
+}
+.cp.done { background: var(--accent); color: var(--surface); }
 .pill { display: inline-block; font-family: var(--font-body); font-size: 0.75rem; font-weight: 600; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 1px 8px; }
 
 .fails { border-top: 1px solid var(--line); padding-top: 22px; display: grid; gap: 10px; }
 .fails h3 { font-size: 1.1rem; }
 .fails ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 70ch; }
+.contact { border-top: 1px solid var(--line); padding-top: 18px; color: var(--muted); font-size: 0.9rem; white-space: pre-line; }
 
 @media print {
   body { background: #fff; padding: 0; }
-  .head, .panel { display: none; }
+  .head, .panel, .cp, .go, .back { display: none; }
   .wrap { display: block; }
   .sheet { border: 0; padding: 0; }
 }
@@ -128,16 +153,16 @@ td.n { color: var(--muted); font-size: 0.84rem; }
 </head>
 <body>
 
-<header class="head">
+<header class="head" id="head">
   <div>
     <h1>Adyen Ausfüllblatt</h1>
-    <p>Kundendaten links eintragen, rechts entsteht das Blatt, das der Kunde zusammen mit dem Adyen-Link bekommt. Die Reihenfolge folgt dem Adyen-Formular, die Fristen stehen als konkrete Daten drin.</p>
+    <p>Kundendaten links eintragen, rechts entsteht das Blatt. Mit „Kundenlink erzeugen“ bekommt der Kunde genau dieses Blatt als persönlichen Link, mit Kopier-Knöpfen und den Buttons zu DocuSign und Adyen.</p>
   </div>
 </header>
 
 <main class="wrap">
   <form class="panel" id="form" autocomplete="off">
-    <p class="sample" id="sample-note">Graue Texte in den Feldern sind nur Beispiele. Einfach reinklicken und die echten Daten eintragen.</p>
+    <p class="sample">Graue Texte in den Feldern sind nur Beispiele. Einfach reinklicken und die echten Daten eintragen.</p>
 
     <fieldset>
       <legend>Hotel & Adyen</legend>
@@ -147,6 +172,14 @@ td.n { color: var(--muted); font-size: 0.84rem; }
       <label for="account">Adyen Company Account Name
         <input id="account" placeholder="wird aus dem Hotelnamen gebildet">
         <span class="hint">Leer lassen = Hotelname ohne Leerzeichen.</span>
+      </label>
+      <label for="adyenLink">Link zum Adyen-Formular
+        <input id="adyenLink" type="url" placeholder="https://…adyen.com/…">
+        <span class="hint" id="adyenHint">Aus dem PMS: „Get sharable link“.</span>
+      </label>
+      <label for="docuLink">Link zu DocuSign (SAQ-A)
+        <input id="docuLink" type="url">
+        <span class="hint" id="docuHint">Ist für alle Kunden gleich.</span>
       </label>
     </fieldset>
 
@@ -217,12 +250,29 @@ td.n { color: var(--muted); font-size: 0.84rem; }
       </label>
     </fieldset>
 
+    <fieldset>
+      <legend>Ihr Kontakt für Rückfragen</legend>
+      <label for="kontakt">Steht unten im Blatt des Kunden
+        <textarea id="kontakt" rows="2" placeholder="Anna Beispiel, HotelFriend Support&#10;support@hotelfriend.com · +49 30 1234567"></textarea>
+      </label>
+    </fieldset>
+
     <div class="actions">
-      <button type="button" id="copy">Als Mailtext kopieren</button>
+      <button type="button" id="makeLink">Kundenlink erzeugen</button>
+      <button type="button" class="ghost" id="preview">Kundenansicht ansehen</button>
       <button type="button" class="ghost" id="clear">Felder leeren</button>
     </div>
+    <div class="linkbox" id="linkbox" hidden>
+      <label for="linkOut">Persönlicher Link
+        <input id="linkOut" readonly>
+      </label>
+      <div class="actions">
+        <button type="button" id="copyLink">Link kopieren</button>
+        <button type="button" class="ghost" id="copyMail">Mail mit Link kopieren</button>
+      </div>
+    </div>
     <div class="toast" id="toast" role="status"></div>
-    <textarea id="fallback" hidden rows="6" style="width:100%"></textarea>
+    <textarea id="fallback" hidden rows="6"></textarea>
   </form>
 
   <article class="sheet" id="sheet" aria-live="polite"></article>
@@ -241,23 +291,53 @@ const TYPE_OF_COMPANY = {
   "Einzelunternehmen": "Sole Proprietorship",
   "GbR": "Partnership"
 };
-const IDS = ["hotel","account","legal","rechtsform","hrb","gericht","ustid","ustfrei","strasse","plz","ort","ubo","dirs","vorname","nachname","email"];
+const DOCUSIGN_DEFAULT = "https://powerforms.docusign.net/fb00823c-e892-4103-9732-3101cdd4bf29?env=eu&acct=32404fe8-2845-4367-830a-bfbdb513cd3b&activateonly=1&afp_platform_select=HotelFriend";
+// Wenn die Seite in einer Vorschau läuft (z. B. claude.ai), zeigen Kundenlinks auf GitHub Pages
+const PAGES_URL = "https://thecedonemaster.github.io/adyen-kyc-onboarding/ausf%C3%BCllblatt/";
+const IDS = ["hotel","account","adyenLink","docuLink","legal","rechtsform","hrb","gericht","ustid","ustfrei","strasse","plz","ort","ubo","dirs","vorname","nachname","email","kontakt"];
 const $ = id => document.getElementById(id);
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const fmt = d => d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 function monthsAgo(n) { const d = new Date(); d.setMonth(d.getMonth() - n); return d; }
 
-function read() {
+// Links aus dem Kundenlink nur zulassen, wenn sie wirklich zu Adyen bzw. DocuSign führen
+function safeUrl(u, hostOk) {
+  try { const x = new URL(u); return x.protocol === "https:" && hostOk(x.hostname) ? x.href : null; } catch { return null; }
+}
+const adyenOk = h => h === "adyen.com" || h.endsWith(".adyen.com");
+const docuOk = h => h === "docusign.net" || h.endsWith(".docusign.net") || h.endsWith(".docusign.com");
+
+// Kundendaten <-> Link (Base64url, UTF-8)
+function encode(obj) {
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
+  let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function decode(str) {
+  const b64 = str.replace(/-/g, "+").replace(/_/g, "/");
+  const bin = atob(b64 + "===".slice((b64.length + 3) % 4));
+  return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
+}
+
+function readForm() {
   const s = {};
   IDS.forEach(id => { const el = $(id); s[id] = el.type === "checkbox" ? el.checked : el.value.trim(); });
+  return s;
+}
+function normalize(raw) {
+  const s = {};
+  IDS.forEach(id => { s[id] = id === "ustfrei" ? !!raw[id] : String(raw[id] ?? "").trim(); });
   s.accountName = s.account || s.hotel.replace(/\s+/g, "");
   s.type = TYPE_OF_COMPANY[s.rechtsform] || "";
-  s.ubo = Number(s.ubo); s.dirs = Number(s.dirs);
+  s.ubo = Math.min(4, Math.max(0, Number(s.ubo) || 0));
+  s.dirs = Math.min(4, Math.max(0, Number(s.dirs) || 0));
+  s.adyenUrl = safeUrl(s.adyenLink, adyenOk);
+  s.docuUrl = safeUrl(s.docuLink || DOCUSIGN_DEFAULT, docuOk);
   return s;
 }
 
-// Jede Zeile: [Feld im Adyen-Formular, Wert oder null (= Kunde trägt selbst ein), Hinweis]
+// Jede Zeile: [Feld im Adyen-Formular, Wert oder null (= Kunde trägt selbst ein), Hinweis, Datei?]
 function sections(s) {
   const regNr = s.hrb ? (s.gericht ? `${s.hrb} (Amtsgericht ${s.gericht})` : s.hrb) : null;
   return [
@@ -266,7 +346,7 @@ function sections(s) {
       ["Type of company", s.type || null, `Ihre Rechtsform: ${s.rechtsform}`],
       ["Registration number", s.hrb || null, regNr ? `Laut Handelsregister: ${regNr}` : "Steht oben auf dem Handelsregisterauszug."],
       ["VAT number", s.ustfrei ? "leer lassen" : (s.ustid || null), s.ustfrei ? "Haken bei „Exempted from VAT“ setzen." : "USt-IdNr. (beginnt mit DE), nicht die Steuernummer."],
-      ["Registration document", "Handelsregisterauszug.pdf", "Datei aus Ihrem Ordner hochladen."],
+      ["Registration document", "Handelsregisterauszug.pdf", "Datei aus Ihrem Ordner hochladen.", true],
       ["Address", s.strasse || null, "Genau wie im Handelsregister."],
       ["Postal code", s.plz || null, ""],
       ["City", s.ort || null, ""]
@@ -280,22 +360,23 @@ function sections(s) {
       ["Currency", "EUR", ""],
       ["Bank name", null, "z. B. Sparkasse Musterstadt"],
       ["Bank city", null, ""],
-      ["Bank statement", "Kontoauszug.pdf", "Datei aus Ihrem Ordner hochladen."]
+      ["Bank statement", "Kontoauszug.pdf", "Datei aus Ihrem Ordner hochladen.", true]
     ]},
     { title: "Ownership & control", rows: [
-      ["Number of people with 25% or more control", String(s.ubo), s.ubo ? "Für jede Person erscheinen danach Felder: Name, Geburtsdatum, Wohnadresse, Ausweis." : "Niemand hält 25 % oder mehr."],
-      ["Number of directors", String(s.dirs), "Anzahl der Geschäftsführer laut Handelsregister."]
+      ["Number of people with 25% or more control", String(s.ubo), s.ubo ? "Für jede Person erscheinen danach Felder: Name, Geburtsdatum, Wohnadresse, Ausweis." : "Niemand hält 25 % oder mehr.", true],
+      ["Number of directors", String(s.dirs), "Anzahl der Geschäftsführer laut Handelsregister.", true]
     ]},
     { title: "Contacts (Signatory)", rows: [
-      ["Legal terms", "beide Haken setzen", "Muss die Person selbst bestätigen, die unten eingetragen ist."],
-      ["First name / Last name", (s.vorname || s.nachname) ? `${s.vorname} ${s.nachname}`.trim() : null, "Wie im Ausweis."],
+      ["Legal terms", "beide Haken setzen", "Muss die Person selbst bestätigen, die unten eingetragen ist.", true],
+      ["First name", s.vorname || null, "Wie im Ausweis."],
+      ["Last name", s.nachname || null, "Wie im Ausweis."],
       ["Residency address", null, "Private Wohnanschrift, Land: Germany."],
       ["Job title", "Managing Director", "= Geschäftsführer"],
       ["Email", s.email || null, ""],
       ["Date of birth", null, "Format TT-MM-JJJJ, z. B. 04-09-1978"],
       ["Phone number", null, "Links +49 wählen, rechts die Nummer ohne führende 0."],
-      ["ID/passport", "Ausweis.pdf", "Vorder- und Rückseite als ein PDF mit zwei Seiten, hochkant."],
-      ["PCI DSS validation documents", "SAQ-A_signiert.pdf", "Das PDF aus Schritt 1."]
+      ["ID/passport", "Ausweis.pdf", "Vorder- und Rückseite als ein PDF mit zwei Seiten, hochkant.", true],
+      ["PCI DSS validation documents", "SAQ-A_signiert.pdf", "Das PDF aus Schritt 1.", true]
     ]}
   ];
 }
@@ -303,38 +384,81 @@ function sections(s) {
 function prepItems(s) {
   const bank = fmt(monthsAgo(3)), hr = fmt(monthsAgo(6));
   const items = [
-    [`Handelsregisterauszug, alle Seiten, abgerufen nach dem <span class="date">${hr}</span>`, "Kostenlos auf handelsregister.de als PDF."],
-    [`Kontoauszug des Geschäftskontos mit Datum nach dem <span class="date">${bank}</span>`, "PDF aus dem Online-Banking mit Banklogo, IBAN und Kontoinhaber. Kein App-Screenshot."],
-    ["Ausweis des Unterzeichners, Vorder- und Rückseite in einem PDF", "Gültig, gut lesbar, nichts abgeschnitten."]
+    ["hr", `Handelsregisterauszug, alle Seiten, abgerufen nach dem <span class="date">${hr}</span>`, "Kostenlos auf handelsregister.de als PDF."],
+    ["bank", `Kontoauszug des Geschäftskontos mit Datum nach dem <span class="date">${bank}</span>`, "PDF aus dem Online-Banking mit Banklogo, IBAN und Kontoinhaber. Kein App-Screenshot."],
+    ["id", "Ausweis des Unterzeichners, Vorder- und Rückseite in einem PDF", "Gültig, gut lesbar, nichts abgeschnitten."]
   ];
-  if (s.ubo) items.push([`Ausweis${s.ubo > 1 ? "e" : ""} von ${s.ubo} Person${s.ubo > 1 ? "en" : ""} mit 25 % oder mehr`, "Dazu jeweils Geburtsdatum und private Wohnanschrift."]);
-  items.push(["Unterschriebenes SAQ-A aus Schritt 1", "Das PDF, das DocuSign nach dem Signieren zum Download anbietet."]);
+  if (s.ubo) items.push(["ubo", `Ausweis${s.ubo > 1 ? "e" : ""} von ${s.ubo} Person${s.ubo > 1 ? "en" : ""} mit 25 % oder mehr`, "Dazu jeweils Geburtsdatum und private Wohnanschrift."]);
   return items;
 }
 
+// ---- Zustand ----
+const params = new URLSearchParams(location.search);
+let customerData = null;
+if (params.has("k")) { try { customerData = decode(params.get("k")); } catch { customerData = {}; } }
+let mode = customerData ? "kunde" : "support"; // "support" | "vorschau" | "kunde"
+let done = {};          // abgehakte Punkte in der Kundenansicht
+let gateOpen = false;   // Hinweis "Es fehlt noch …" sichtbar
+const storeKey = s => "adyen-blatt:" + s.accountName;
+function loadDone(s) { try { done = JSON.parse(localStorage.getItem(storeKey(s)) || "{}"); } catch { done = {}; } }
+function saveDone(s) { try { localStorage.setItem(storeKey(s), JSON.stringify(done)); } catch {} }
+
+function state() { return normalize(mode === "kunde" ? customerData : readForm()); }
+
 function render() {
-  const s = read();
+  const s = state();
+  const interactive = mode !== "support";
+  document.body.classList.toggle("kunde", interactive);
+  $("head").hidden = interactive;
+  $("form").hidden = interactive;
+
   const today = fmt(new Date());
-  const valCell = v => v === null ? `<span class="open">Ihre Angabe</span>` : esc(v);
+  const valCell = (v, noCopy) => {
+    if (v === null) return `<span class="open">Ihre Angabe</span>`;
+    if (!interactive || noCopy) return `<span class="${noCopy ? "file" : ""}">${esc(v)}</span>`;
+    return `<span class="val"><span>${esc(v)}</span><button type="button" class="cp" data-copy="${esc(v)}">Kopieren</button></span>`;
+  };
   const tables = sections(s).map(sec => `
     <div class="section-label">${esc(sec.title)}</div>
     <div class="tbl-wrap"><table>
       <thead><tr><th>Feld im Formular</th><th>Eintragen</th><th>Hinweis</th></tr></thead>
-      <tbody>${sec.rows.map(([f, v, n]) => `<tr><td class="f">${esc(f)}</td><td class="v">${valCell(v)}</td><td class="n">${esc(n)}</td></tr>`).join("")}</tbody>
+      <tbody>${sec.rows.map(([f, v, n, noCopy]) => `<tr><td class="f">${esc(f)}</td><td class="v">${valCell(v, noCopy)}</td><td class="n">${esc(n)}</td></tr>`).join("")}</tbody>
     </table></div>`).join("");
 
+  const prep = prepItems(s);
+  const prepDone = prep.filter(([k]) => done[k]).length;
+  const allPrep = prepDone === prep.length;
+  const missing = prep.filter(([k]) => !done[k]).length + (done.saq ? 0 : 1);
+  const prepList = prep.map(([k, t, h]) => interactive
+    ? `<li><input type="checkbox" id="p-${k}" data-done="${k}" ${done[k] ? "checked" : ""}><label for="p-${k}"><strong>${t}</strong><br><span class="hint">${esc(h)}</span></label></li>`
+    : `<li><span class="box" aria-hidden="true"></span><span><strong>${t}</strong><br><span class="hint">${esc(h)}</span></span></li>`).join("");
+
+  const docuBtn = s.docuUrl
+    ? `<a class="btn" href="${esc(s.docuUrl)}" target="_blank" rel="noopener">DocuSign öffnen</a>`
+    : `<span class="hint bad">DocuSign-Link fehlt.</span>`;
+  let adyenBtn;
+  if (!s.adyenUrl) adyenBtn = `<span class="hint bad">Den Link zum Adyen-Formular schicken wir Ihnen separat.</span>`;
+  else if (!interactive) adyenBtn = `<a class="btn" href="${esc(s.adyenUrl)}" target="_blank" rel="noopener">Adyen-Formular öffnen</a>`;
+  else if (missing === 0 || gateOpen) adyenBtn = `<a class="btn" href="${esc(s.adyenUrl)}" target="_blank" rel="noopener">Adyen-Formular öffnen</a>`;
+  else adyenBtn = `<button type="button" class="btn locked" id="gateBtn">Adyen-Formular öffnen</button>`;
+  const gate = interactive && gateOpen && missing > 0 && s.adyenUrl
+    ? `<div class="gate"><p>Es fehlen noch ${missing} Punkt${missing > 1 ? "e" : ""} aus der Checkliste. Das Formular speichert keine Zwischenstände, bei einem Abbruch müssen Sie von vorn beginnen.</p></div>`
+    : "";
+
   $("sheet").innerHTML = `
+    ${mode === "vorschau" ? `<button type="button" class="ghost back" id="back">← Zurück zur Eingabe</button>` : ""}
     <div class="sheet-top">
       <span class="eyebrow">Zahlungsanbindung über Adyen</span>
       <h2>Ihr Ausfüllblatt, ${esc(s.hotel || "Ihr Hotel")}</h2>
       <span class="meta">${s.legal ? esc(s.legal) + " · " : ""}erstellt am <span class="date">${today}</span></span>
     </div>
-    <p class="lead">Mit diesem Blatt dauert die Registrierung etwa 20 Minuten. Die Werte, die wir schon kennen, stehen bereits drin. Sie tragen nur noch ein, was als „Ihre Angabe“ markiert ist.</p>
+    <p class="lead">Mit diesem Blatt dauert die Registrierung etwa 20 Minuten. Die Werte, die wir schon kennen, stehen bereits drin${interactive ? " und lassen sich mit „Kopieren“ direkt übernehmen" : ""}. Sie tragen nur noch ein, was als „Ihre Angabe“ markiert ist.</p>
 
     <section class="prep">
       <h3>Bevor Sie einen Link öffnen</h3>
       <p>Das Adyen-Formular speichert keine Zwischenstände. Legen Sie deshalb diese Dateien vorher in einen Ordner (PDF, JPG oder PNG, je 100 KB bis 4 MB):</p>
-      <ul>${prepItems(s).map(([t, h]) => `<li><span class="box" aria-hidden="true"></span><span><strong>${t}</strong><br><span class="hint">${esc(h)}</span></span></li>`).join("")}</ul>
+      <ul>${prepList}</ul>
+      ${interactive ? `<span class="progress ${allPrep ? "ok" : ""}">${prepDone} von ${prep.length} bereit</span>` : ""}
     </section>
 
     <section class="step">
@@ -344,16 +468,21 @@ function render() {
         <thead><tr><th>Feld</th><th>Eintragen</th><th>Hinweis</th></tr></thead>
         <tbody>
           <tr><td class="f">Adyen Company Account Name</td><td class="v">${valCell(s.accountName || null)}</td><td class="n">Genau so, ohne Leerzeichen.</td></tr>
-          <tr><td class="f">URL</td><td class="v">hotelfriend.com</td><td class="n"><span class="pill">2×</span> Taucht an zwei Stellen auf.</td></tr>
-          <tr><td class="f">Website URL(s)</td><td class="v">hotelfriend.com</td><td class="n"></td></tr>
+          <tr><td class="f">URL</td><td class="v">${valCell("hotelfriend.com")}</td><td class="n"><span class="pill">2×</span> Taucht an zwei Stellen auf.</td></tr>
+          <tr><td class="f">Website URL(s)</td><td class="v">${valCell("hotelfriend.com")}</td><td class="n"></td></tr>
         </tbody>
       </table></div>
       <p>Am Ende elektronisch unterschreiben und das PDF herunterladen. Legen Sie es als <strong>SAQ-A_signiert.pdf</strong> in Ihren Ordner.</p>
+      <div class="go">${docuBtn}
+        ${interactive ? `<label class="step-done" for="p-saq"><input type="checkbox" id="p-saq" data-done="saq" ${done.saq ? "checked" : ""}> Unterschrieben und PDF gespeichert</label>` : ""}
+      </div>
     </section>
 
     <section class="step">
       <div class="step-head"><span class="step-num">2</span><h3>Adyen-Formular</h3><span class="sub">ca. 15 Minuten, in einem Durchgang</span></div>
-      <p>Lassen Sie die Formularsprache auf <strong>English</strong>, dann stimmen die Feldnamen mit diesem Blatt überein. Die Seite „Introduction“ einfach mit „Next“ überspringen.</p>
+      <p>Lassen Sie die Formularsprache auf <strong>English</strong>, dann stimmen die Feldnamen mit diesem Blatt überein. Die Seite „Introduction“ einfach mit „Next“ überspringen.${interactive ? " Am besten öffnen Sie das Formular in einem zweiten Fenster neben diesem Blatt." : ""}</p>
+      <div class="go">${adyenBtn}</div>
+      ${gate}
       ${tables}
       <p>Danach auf <strong>Submit application</strong> klicken. Adyen prüft innerhalb von 5 Werktagen, wir melden uns mit dem Ergebnis.</p>
     </section>
@@ -367,42 +496,91 @@ function render() {
         <li>Adresse anders geschrieben als im Handelsregister.</li>
         <li>Handelsregisterauszug zeigt noch einen früheren Geschäftsführer.</li>
       </ol>
-    </section>`;
+    </section>
+    ${s.kontakt ? `<p class="contact"><strong>Fragen?</strong> Melden Sie sich bei:\n${esc(s.kontakt)}</p>` : ""}`;
+
+  if (mode === "support") {
+    const raw = readForm();
+    $("adyenHint").textContent = raw.adyenLink && !s.adyenUrl ? "Das ist kein Adyen-Link (muss mit https:// beginnen und auf adyen.com liegen)." : "Aus dem PMS: „Get sharable link“.";
+    $("adyenHint").classList.toggle("bad", !!raw.adyenLink && !s.adyenUrl);
+    $("docuHint").textContent = !s.docuUrl ? "Das ist kein DocuSign-Link." : "Ist für alle Kunden gleich.";
+    $("docuHint").classList.toggle("bad", !s.docuUrl);
+  }
 }
 
-function asText() {
-  const s = read();
-  const L = [];
-  L.push(`Ihr Ausfüllblatt für die Adyen-Registrierung (${s.hotel})`, "");
-  L.push("BEVOR SIE EINEN LINK ÖFFNEN", "Das Adyen-Formular speichert keine Zwischenstände. Legen Sie diese Dateien vorher in einen Ordner:");
-  prepItems(s).forEach(([t, h]) => L.push(`[ ] ${t.replace(/<[^>]+>/g, "")}: ${h}`));
-  L.push("", "SCHRITT 1: DocuSign (SAQ-A)");
-  L.push(`- Adyen Company Account Name: ${s.accountName || "(Ihre Angabe)"}`, "- URL und Website URL(s): hotelfriend.com", "Am Ende signieren und das PDF herunterladen.");
-  L.push("", "SCHRITT 2: Adyen-Formular (Sprache auf English lassen)");
-  sections(s).forEach(sec => {
-    L.push("", sec.title.toUpperCase());
-    sec.rows.forEach(([f, v, n]) => L.push(`- ${f}: ${v === null ? "(Ihre Angabe)" : v}${n ? `  [${n}]` : ""}`));
+function customerLink() {
+  const raw = readForm();
+  const data = {};
+  IDS.forEach(id => {
+    if (id === "docuLink" && (raw[id] === DOCUSIGN_DEFAULT || !raw[id])) return;
+    if (raw[id] !== "" && raw[id] !== false) data[id] = raw[id];
   });
-  L.push("", "Danach „Submit application“ klicken.");
-  return L.join("\n");
+  const inPreview = !/^https?:$/.test(location.protocol) || /claude|anthropic|usercontent/.test(location.hostname);
+  const base = inPreview ? PAGES_URL : location.origin + location.pathname;
+  return base + "?k=" + encode(data);
 }
 
-$("form").addEventListener("input", render);
-$("form").addEventListener("submit", e => e.preventDefault());
-$("clear").addEventListener("click", () => {
-  IDS.forEach(id => { const el = $(id); if (el.type === "checkbox") el.checked = false; else if (el.tagName === "INPUT") el.value = ""; });
-  render();
-});
-$("copy").addEventListener("click", () => {
-  const text = asText();
+function mailText(link) {
+  const s = state();
+  return `Guten Tag,
+
+damit Zahlungen künftig automatisch in HotelFriend verbucht werden, registrieren Sie sich bitte einmalig bei unserem Zahlungspartner Adyen. Wir haben dafür eine persönliche Anleitung für ${s.hotel || "Ihr Hotel"} vorbereitet, in der Ihre Firmendaten schon eingetragen sind:
+
+${link}
+
+Planen Sie etwa 20 Minuten ein. Wichtig: Legen Sie zuerst die Unterlagen aus der Checkliste bereit und öffnen Sie erst dann die Formulare. Das Adyen-Formular speichert keine Zwischenstände.
+
+Beste Grüße`;
+}
+
+function copy(text, okMsg, btn) {
   const fb = $("fallback");
   navigator.clipboard.writeText(text).then(() => {
-    fb.hidden = true; $("toast").textContent = "Mailtext kopiert.";
+    fb.hidden = true;
+    if (btn) { btn.textContent = "Kopiert"; btn.classList.add("done"); setTimeout(() => { btn.textContent = "Kopieren"; btn.classList.remove("done"); }, 1500); }
+    else $("toast").textContent = okMsg;
   }).catch(() => {
+    if (btn) { window.getSelection().selectAllChildren(btn.previousElementSibling); btn.textContent = "Markiert, Cmd+C"; return; }
     fb.hidden = false; fb.value = text; fb.select();
     $("toast").textContent = "Kopieren nicht erlaubt. Text ist markiert, bitte mit Cmd+C kopieren.";
   });
+}
+
+// ---- Events ----
+$("docuLink").value = DOCUSIGN_DEFAULT;
+$("form").addEventListener("input", () => { $("linkbox").hidden = true; $("toast").textContent = ""; render(); });
+$("form").addEventListener("submit", e => e.preventDefault());
+$("clear").addEventListener("click", () => {
+  IDS.forEach(id => { const el = $(id); if (el.type === "checkbox") el.checked = false; else if (el.tagName !== "SELECT") el.value = ""; });
+  $("docuLink").value = DOCUSIGN_DEFAULT; $("linkbox").hidden = true; render();
 });
+$("makeLink").addEventListener("click", () => {
+  const s = state();
+  $("linkOut").value = customerLink();
+  $("linkbox").hidden = false;
+  $("toast").textContent = s.adyenUrl ? "Link erzeugt." : "Link erzeugt, aber ohne Adyen-Link. Der Kunde sieht dann keinen Button zum Formular.";
+});
+$("copyLink").addEventListener("click", () => copy($("linkOut").value, "Link kopiert."));
+$("copyMail").addEventListener("click", () => copy(mailText($("linkOut").value), "Mail kopiert."));
+$("preview").addEventListener("click", () => { mode = "vorschau"; done = {}; gateOpen = false; render(); window.scrollTo(0, 0); });
+
+$("sheet").addEventListener("click", e => {
+  const cp = e.target.closest(".cp");
+  if (cp) return copy(cp.dataset.copy, "", cp);
+  if (e.target.closest("#back")) { mode = "support"; render(); return; }
+  if (e.target.closest("#gateBtn")) { gateOpen = true; render(); }
+});
+$("sheet").addEventListener("change", e => {
+  const k = e.target.dataset.done;
+  if (!k) return;
+  done[k] = e.target.checked;
+  if (mode === "kunde") saveDone(state());
+  render();
+  const again = document.getElementById(e.target.id);
+  if (again) again.focus();
+});
+
+if (mode === "kunde") loadDone(state());
 render();
 </script>
 </body>
