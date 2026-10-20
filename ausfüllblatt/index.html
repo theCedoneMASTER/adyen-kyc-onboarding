@@ -60,6 +60,7 @@ legend { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter
 label { display: grid; gap: 4px; font-size: 0.85rem; font-weight: 500; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .row-plz { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
+input::placeholder { color: var(--muted); opacity: 0.7; font-style: italic; }
 input, select {
   font: inherit; font-size: 0.92rem; color: var(--ink); background: var(--bg);
   border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; width: 100%; min-width: 0;
@@ -136,12 +137,12 @@ td.n { color: var(--muted); font-size: 0.84rem; }
 
 <main class="wrap">
   <form class="panel" id="form" autocomplete="off">
-    <p class="sample" id="sample-note">Beispieldaten. HRB, USt-IdNr. und Adresse sind Platzhalter, keine echten Registerdaten.</p>
+    <p class="sample" id="sample-note">Graue Texte in den Feldern sind nur Beispiele. Einfach reinklicken und die echten Daten eintragen.</p>
 
     <fieldset>
       <legend>Hotel & Adyen</legend>
       <label for="hotel">Hotelname
-        <input id="hotel" value="Hotel Deutscher Kaiser">
+        <input id="hotel" placeholder="Hotel Deutscher Kaiser">
       </label>
       <label for="account">Adyen Company Account Name
         <input id="account" placeholder="wird aus dem Hotelnamen gebildet">
@@ -152,7 +153,7 @@ td.n { color: var(--muted); font-size: 0.84rem; }
     <fieldset>
       <legend>Laut Handelsregister</legend>
       <label for="legal">Firmierung (exakt)
-        <input id="legal" value="Hotel Deutscher Kaiser Betriebsgesellschaft mbH">
+        <input id="legal" placeholder="Hotel Deutscher Kaiser Betriebsgesellschaft mbH">
       </label>
       <label for="rechtsform">Rechtsform
         <select id="rechtsform">
@@ -170,25 +171,25 @@ td.n { color: var(--muted); font-size: 0.84rem; }
       </label>
       <div class="row2">
         <label for="hrb">Registernummer
-          <input id="hrb" value="HRB 12345">
+          <input id="hrb" placeholder="HRB 12345">
         </label>
         <label for="gericht">Amtsgericht
-          <input id="gericht" value="Musterstadt">
+          <input id="gericht" placeholder="Musterstadt">
         </label>
       </div>
       <label for="ustid">USt-IdNr.
-        <input id="ustid" value="DE123456789">
+        <input id="ustid" placeholder="DE123456789">
       </label>
       <label class="check" for="ustfrei"><input type="checkbox" id="ustfrei"> Von der USt befreit</label>
       <label for="strasse">Straße und Hausnummer
-        <input id="strasse" value="Musterstraße 1">
+        <input id="strasse" placeholder="Musterstraße 1">
       </label>
       <div class="row-plz">
         <label for="plz">PLZ
-          <input id="plz" value="12345" inputmode="numeric">
+          <input id="plz" placeholder="12345" inputmode="numeric">
         </label>
         <label for="ort">Ort
-          <input id="ort" value="Musterstadt">
+          <input id="ort" placeholder="Musterstadt">
         </label>
       </div>
       <div class="row2">
@@ -205,14 +206,14 @@ td.n { color: var(--muted); font-size: 0.84rem; }
       <legend>Unterzeichner</legend>
       <div class="row2">
         <label for="vorname">Vorname
-          <input id="vorname" value="Max">
+          <input id="vorname" placeholder="Max">
         </label>
         <label for="nachname">Nachname
-          <input id="nachname" value="Mustermann">
+          <input id="nachname" placeholder="Mustermann">
         </label>
       </div>
       <label for="email">E-Mail
-        <input id="email" type="email" value="gf@beispiel-hotel.de">
+        <input id="email" type="email" placeholder="gf@beispiel-hotel.de">
       </label>
     </fieldset>
 
@@ -326,7 +327,7 @@ function render() {
     <div class="sheet-top">
       <span class="eyebrow">Zahlungsanbindung über Adyen</span>
       <h2>Ihr Ausfüllblatt, ${esc(s.hotel || "Ihr Hotel")}</h2>
-      <span class="meta">${esc(s.legal)} · erstellt am <span class="date">${today}</span></span>
+      <span class="meta">${s.legal ? esc(s.legal) + " · " : ""}erstellt am <span class="date">${today}</span></span>
     </div>
     <p class="lead">Mit diesem Blatt dauert die Registrierung etwa 20 Minuten. Die Werte, die wir schon kennen, stehen bereits drin. Sie tragen nur noch ein, was als „Ihre Angabe“ markiert ist.</p>
 
@@ -342,7 +343,7 @@ function render() {
       <div class="tbl-wrap"><table>
         <thead><tr><th>Feld</th><th>Eintragen</th><th>Hinweis</th></tr></thead>
         <tbody>
-          <tr><td class="f">Adyen Company Account Name</td><td class="v">${esc(s.accountName)}</td><td class="n">Genau so, ohne Leerzeichen.</td></tr>
+          <tr><td class="f">Adyen Company Account Name</td><td class="v">${valCell(s.accountName || null)}</td><td class="n">Genau so, ohne Leerzeichen.</td></tr>
           <tr><td class="f">URL</td><td class="v">hotelfriend.com</td><td class="n"><span class="pill">2×</span> Taucht an zwei Stellen auf.</td></tr>
           <tr><td class="f">Website URL(s)</td><td class="v">hotelfriend.com</td><td class="n"></td></tr>
         </tbody>
@@ -376,7 +377,7 @@ function asText() {
   L.push("BEVOR SIE EINEN LINK ÖFFNEN", "Das Adyen-Formular speichert keine Zwischenstände. Legen Sie diese Dateien vorher in einen Ordner:");
   prepItems(s).forEach(([t, h]) => L.push(`[ ] ${t.replace(/<[^>]+>/g, "")}: ${h}`));
   L.push("", "SCHRITT 1: DocuSign (SAQ-A)");
-  L.push(`- Adyen Company Account Name: ${s.accountName}`, "- URL und Website URL(s): hotelfriend.com", "Am Ende signieren und das PDF herunterladen.");
+  L.push(`- Adyen Company Account Name: ${s.accountName || "(Ihre Angabe)"}`, "- URL und Website URL(s): hotelfriend.com", "Am Ende signieren und das PDF herunterladen.");
   L.push("", "SCHRITT 2: Adyen-Formular (Sprache auf English lassen)");
   sections(s).forEach(sec => {
     L.push("", sec.title.toUpperCase());
@@ -386,11 +387,11 @@ function asText() {
   return L.join("\n");
 }
 
-$("form").addEventListener("input", () => { $("sample-note").hidden = true; render(); });
+$("form").addEventListener("input", render);
 $("form").addEventListener("submit", e => e.preventDefault());
 $("clear").addEventListener("click", () => {
   IDS.forEach(id => { const el = $(id); if (el.type === "checkbox") el.checked = false; else if (el.tagName === "INPUT") el.value = ""; });
-  $("sample-note").hidden = true; render();
+  render();
 });
 $("copy").addEventListener("click", () => {
   const text = asText();
